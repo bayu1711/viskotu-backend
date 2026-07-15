@@ -1,9 +1,9 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import SpaceViewSet
+from .views import CreativeAssetViewSet
 
 router = DefaultRouter()
-router.register(r'', SpaceViewSet, basename='space')
+router.register(r'', CreativeAssetViewSet, basename='creative-asset')
 
 urlpatterns = [
     path('', include(router.urls)),
