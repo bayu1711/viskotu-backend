@@ -25,9 +25,10 @@ class CampaignViewSet(viewsets.ModelViewSet):
     ordering = ['-created_at']
 
     def get_queryset(self):
-        return Campaign.objects.filter(
-            advertiser=self.request.user
-        ).prefetch_related('assets')
+        user = self.request.user
+        if user.is_staff and self.request.query_params.get('all') == 'true':
+            return Campaign.objects.all().prefetch_related('assets')
+        return Campaign.objects.filter(advertiser=user).prefetch_related('assets')
 
     def get_serializer_class(self):
         if self.action == 'list':

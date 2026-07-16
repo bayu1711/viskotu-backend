@@ -1,8 +1,9 @@
 from django.contrib.auth import get_user_model, authenticate
 from rest_framework import status
 from rest_framework.views import APIView
+from rest_framework import viewsets
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
 from rest_framework_simplejwt.exceptions import TokenError
@@ -133,5 +134,10 @@ class ResendVerificationView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        # TODO: resend verification email
+        request.user.send_verification_email()
         return Response({'detail': 'Verification email sent.'})
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsAdminUser]

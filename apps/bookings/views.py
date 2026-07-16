@@ -9,6 +9,10 @@ class BookingViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
+        if user.is_staff and self.request.query_params.get('all') == 'true':
+            return Booking.objects.all()
+        
+        # Space owner sees bookings for their spaces.
         return Booking.objects.filter(
             Q(advertiser=user) | Q(space__owner=user)
         )

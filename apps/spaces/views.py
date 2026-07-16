@@ -67,6 +67,9 @@ class SpaceViewSet(viewsets.ModelViewSet):
         # Owner filter (for space owner dashboard)
         if params.get('owner') == 'me':
             qs = qs.filter(owner=self.request.user)
+        elif self.request.user.is_staff and params.get('all') == 'true':
+            # Admin seeing all spaces
+            pass
 
         return qs
 

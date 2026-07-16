@@ -10,6 +10,8 @@ class PaymentViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
+        if self.request.user.is_staff and self.request.query_params.get('all') == 'true':
+            return Payment.objects.all()
         return Payment.objects.filter(payer=self.request.user)
 
     def perform_create(self, serializer):
@@ -26,6 +28,8 @@ class PayoutViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
+        if self.request.user.is_staff and self.request.query_params.get('all') == 'true':
+            return Payout.objects.all()
         return Payout.objects.filter(recipient=self.request.user)
 
     def perform_create(self, serializer):

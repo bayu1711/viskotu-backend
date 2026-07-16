@@ -9,7 +9,7 @@ class PrintJobViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if user.role == 'admin':
+        if user.is_staff and self.request.query_params.get('all') == 'true':
             return PrintJob.objects.all()
         # Printer can see jobs assigned to them
         # Space owner can see jobs for their spaces?
