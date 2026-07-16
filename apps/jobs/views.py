@@ -1,3 +1,17 @@
-from django.shortcuts import render
+from rest_framework import viewsets, permissions
+from .models import PrintJob
+from .serializers import PrintJobSerializer
+from django.db.models import Q
 
-# Create your views here.
+class PrintJobViewSet(viewsets.ModelViewSet):
+    serializer_class = PrintJobSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == 'admin':
+            return PrintJob.objects.all()
+        # Printer can see jobs assigned to them
+        # Space owner can see jobs for their spaces?
+        # Let's filter by printer for now
+        return PrintJob.objects.filter(printer=user)
