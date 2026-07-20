@@ -73,3 +73,27 @@ class PrintJob(models.Model):
 
     def __str__(self):
         return f'Job {self.id} [{self.status}]'
+
+    def reroute_to_next_printer(self):
+        from django.contrib.auth import get_user_model
+        from django.utils import timezone
+        import datetime
+        User = get_user_model()
+
+        if self.printer and str(self.printer.id) not in self.tried_printer_ids:
+            self.tried_printer_ids.append(str(self.printer.id))
+
+        self.reroute_count += 1
+
+        next_printer = User.objects.filter(role='printer').exclude(id__in=self.tried_printer_ids).first()
+        if next_printer:
+            self.printer = next_printer
+            self.status = 'JOB_PENDING_ACCEPT'
+            self.accept_deadline = timezone.now() + datetime.timedelta(hours=24)
+            self.save(update_fields=['printer', 'status', 'accept_deadline', 'tried_printer_ids', 'reroute_count', 'updated_at'])
+            return next_printer
+        else:
+            self.printer = None
+            self.status = 'JOB_STALLED'
+            self.save(update_fields=['printer', 'status', 'tried_printer_ids', 'reroute_count', 'updated_at'])
+            return None
