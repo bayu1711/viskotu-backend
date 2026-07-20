@@ -1,4 +1,9 @@
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.core.mail import send_mail
+from django.conf import settings
 from django.db import models
 import uuid
 
@@ -69,3 +74,15 @@ class User(AbstractBaseUser, PermissionsMixin):
     @property
     def name(self):
         return f'{self.first_name} {self.last_name}'.strip() or self.email
+
+    def send_verification_email(self, request=None):
+        token = default_token_generator.make_token(self)
+        uid = urlsafe_base64_encode(force_bytes(self.pk))
+        verify_url = f"http://localhost:3000/verify-email?uid={uid}&token={token}"
+        send_mail(
+            subject="Verify your Viskotu email address",
+            message=f"Hi {self.name},\n\nPlease click the link below to verify your email address:\n\n{verify_url}\n\nThank you,\nViskotu Team",
+            from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@viskotu.com'),
+            recipient_list=[self.email],
+            fail_silently=False,
+        )

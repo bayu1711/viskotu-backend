@@ -4,9 +4,13 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.views.generic import RedirectView
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 urlpatterns = [
+    # Redirect root URL to Django admin panel
+    path('', RedirectView.as_view(url='django-admin/', permanent=False)),
+
     # Django admin
     path('django-admin/', admin.site.urls),
 

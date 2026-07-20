@@ -55,4 +55,5 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
 
 
 class VerifyEmailSerializer(serializers.Serializer):
+    uid = serializers.CharField()
     token = serializers.CharField()

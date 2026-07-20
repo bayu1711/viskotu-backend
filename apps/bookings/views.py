@@ -22,12 +22,13 @@ class BookingViewSet(viewsets.ModelViewSet):
 
     def perform_update(self, serializer):
         from apps.jobs.models import PrintJob
-        from apps.users.models import CustomUser
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
         
         instance = serializer.save()
         if instance.status in ['confirmed', 'paid'] and not hasattr(instance, 'print_job'):
             # Find a printer (e.g. first available)
-            printer = CustomUser.objects.filter(role='printer').first()
+            printer = User.objects.filter(role='printer').first()
             PrintJob.objects.create(
                 booking=instance,
                 printer=printer,

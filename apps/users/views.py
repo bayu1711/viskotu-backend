@@ -1,4 +1,9 @@
 from django.contrib.auth import get_user_model, authenticate
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.core.mail import send_mail
+from django.conf import settings
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework import viewsets
@@ -32,6 +37,7 @@ class SignupView(APIView):
         serializer = SignupSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
+        user.send_verification_email(request)
         tokens = get_tokens_for_user(user)
         return Response({
             'user': UserSerializer(user).data,
@@ -105,8 +111,18 @@ class PasswordResetRequestView(APIView):
     def post(self, request):
         serializer = PasswordResetRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        # TODO: generate token, send email via SendGrid/Postmark
-        # For now, always return success (don't reveal if email exists)
+        user = User.objects.filter(email=serializer.validated_data['email']).first()
+        if user:
+            token = default_token_generator.make_token(user)
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            reset_url = f"http://localhost:3000/reset-password?uid={uid}&token={token}"
+            send_mail(
+                subject="Reset your Viskotu password",
+                message=f"Hi {user.name},\n\nPlease click the link below to reset your password:\n\n{reset_url}\n\nIf you didn't request a password reset, you can safely ignore this email.",
+                from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@viskotu.com'),
+                recipient_list=[user.email],
+                fail_silently=False,
+            )
         return Response({'detail': 'If that email exists, a reset link has been sent.'})
 
 
@@ -116,7 +132,17 @@ class PasswordResetConfirmView(APIView):
     def post(self, request):
         serializer = PasswordResetConfirmSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        # TODO: validate token, update password
+        try:
+            uid = force_str(urlsafe_base64_decode(serializer.validated_data['uid']))
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            return Response({'detail': 'Invalid reset link.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not default_token_generator.check_token(user, serializer.validated_data['token']):
+            return Response({'detail': 'Invalid or expired token.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.set_password(serializer.validated_data['new_password'])
+        user.save()
         return Response({'detail': 'Password reset successful.'})
 
 
@@ -126,7 +152,17 @@ class VerifyEmailView(APIView):
     def post(self, request):
         serializer = VerifyEmailSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        # TODO: validate token, mark user as verified
+        try:
+            uid = force_str(urlsafe_base64_decode(serializer.validated_data['uid']))
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            return Response({'detail': 'Invalid verification link.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not default_token_generator.check_token(user, serializer.validated_data['token']):
+            return Response({'detail': 'Invalid or expired token.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.is_email_verified = True
+        user.save(update_fields=['is_email_verified'])
         return Response({'detail': 'Email verified.'})
 
 
@@ -134,7 +170,7 @@ class ResendVerificationView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        request.user.send_verification_email()
+        request.user.send_verification_email(request)
         return Response({'detail': 'Verification email sent.'})
 
 class UserViewSet(viewsets.ModelViewSet):
