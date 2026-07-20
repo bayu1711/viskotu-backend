@@ -2,7 +2,7 @@ from django.urls import reverse
 from django.contrib.auth import get_user_model
 from rest_framework.test import APITestCase
 from rest_framework import status
-from apps.spaces.models import Space
+from apps.spaces.models import Space, SpaceAvailability
 from apps.bookings.models import Booking
 from apps.jobs.models import PrintJob
 import datetime
@@ -44,6 +44,44 @@ class BookingCreationTests(APITestCase):
         self.assertEqual(response.data['status'], 'pending')
         self.assertEqual(str(response.data['advertiser']), str(self.advertiser.id))
         self.assertEqual(Booking.objects.count(), 1)
+
+    def test_create_booking_overlapping_failure(self):
+        Booking.objects.create(
+            advertiser=self.advertiser,
+            space=self.space,
+            start_date=datetime.date(2026, 8, 5),
+            end_date=datetime.date(2026, 8, 15),
+            total_price='1000.00',
+            status='confirmed'
+        )
+        url = reverse('booking-list')
+        data = {
+            'space': str(self.space.id),
+            'start_date': '2026-08-01',
+            'end_date': '2026-08-10',
+            'total_price': '1000.00'
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('detail', response.data)
+
+    def test_create_booking_blocked_date_failure(self):
+        SpaceAvailability.objects.create(
+            space=self.space,
+            date=datetime.date(2026, 8, 3),
+            is_blocked=True,
+            reason='Maintenance'
+        )
+        url = reverse('booking-list')
+        data = {
+            'space': str(self.space.id),
+            'start_date': '2026-08-01',
+            'end_date': '2026-08-10',
+            'total_price': '1000.00'
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('detail', response.data)
 
 
 class BookingPrintJobTriggerTests(APITestCase):
