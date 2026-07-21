@@ -29,7 +29,7 @@ class SpaceSerializer(serializers.ModelSerializer):
             'base_rate', 'billing_period', 'min_booking_duration',
             'bulk_discount_enabled', 'bulk_discount_percentage',
             'fulfillment_type', 'self_fulfillment_reason',
-            'print_partner_routing', 'preferred_printer',
+            'print_partner_routing', 'preferred_production_partner',
             'install_lead_days', 'production_lead_days',
             'status', 'is_featured', 'occupancy_rate',
             'impressions_estimate', 'photos', 'primary_photo',

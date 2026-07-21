@@ -65,7 +65,7 @@ class Space(models.Model):
     fulfillment_type = models.CharField(max_length=20, choices=FULFILLMENT_CHOICES, default='managed_printing')
     self_fulfillment_reason = models.CharField(max_length=50, blank=True)
     print_partner_routing = models.CharField(max_length=20, blank=True)
-    preferred_printer = models.ForeignKey(
+    preferred_production_partner = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
         null=True, blank=True, related_name='preferred_for_spaces'
     )

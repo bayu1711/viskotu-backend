@@ -22,7 +22,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name='space',
-            name='preferred_printer',
+            name='preferred_production_partner',
             field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='preferred_for_spaces', to=settings.AUTH_USER_MODEL),
         ),
         migrations.AlterUniqueTogether(

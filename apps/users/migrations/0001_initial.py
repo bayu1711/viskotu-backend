@@ -23,7 +23,7 @@ class Migration(migrations.Migration):
                 ('email', models.EmailField(max_length=254, unique=True)),
                 ('first_name', models.CharField(blank=True, max_length=100)),
                 ('last_name', models.CharField(blank=True, max_length=100)),
-                ('role', models.CharField(choices=[('advertiser', 'Advertiser'), ('space-owner', 'Space Owner'), ('printer', 'Printer'), ('admin', 'Admin')], default='advertiser', max_length=20)),
+                ('role', models.CharField(choices=[('advertiser', 'Advertiser'), ('space-owner', 'Space Owner'), ('production-partner', 'Production Partner'), ('admin', 'Admin')], default='advertiser', max_length=20)),
                 ('is_email_verified', models.BooleanField(default=False)),
                 ('is_active', models.BooleanField(default=True)),
                 ('is_staff', models.BooleanField(default=False)),

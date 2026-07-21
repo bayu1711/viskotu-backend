@@ -22,15 +22,15 @@ class PrintJobBiddingReroutingTests(APITestCase):
             password='Password123!',
             role='advertiser'
         )
-        self.printer1 = User.objects.create_user(
-            email='printer1@example.com',
+        self.production_partner1 = User.objects.create_user(
+            email='production_partner1@example.com',
             password='Password123!',
-            role='printer'
+            role='production-partner'
         )
-        self.printer2 = User.objects.create_user(
-            email='printer2@example.com',
+        self.production_partner2 = User.objects.create_user(
+            email='production_partner2@example.com',
             password='Password123!',
-            role='printer'
+            role='production-partner'
         )
         self.space = Space.objects.create(
             owner=self.owner,
@@ -49,15 +49,15 @@ class PrintJobBiddingReroutingTests(APITestCase):
         )
         self.job = PrintJob.objects.create(
             booking=self.booking,
-            printer=self.printer1,
+            production_partner=self.production_partner1,
             status='JOB_PENDING_ACCEPT',
             material='Standard Vinyl',
             size='24x36',
             quantity=1
         )
 
-    def test_printer_accept_job(self):
-        self.client.force_authenticate(user=self.printer1)
+    def test_production_partner_accept_job(self):
+        self.client.force_authenticate(user=self.production_partner1)
         url = reverse('job-accept', kwargs={'pk': self.job.id})
         response = self.client.post(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -65,36 +65,36 @@ class PrintJobBiddingReroutingTests(APITestCase):
         self.assertEqual(self.job.status, 'JOB_PREP')
         self.assertIsNotNone(self.job.accepted_at)
 
-    def test_printer_reject_job_reroutes_to_second_printer(self):
-        self.client.force_authenticate(user=self.printer1)
+    def test_production_partner_reject_job_reroutes_to_second_printer(self):
+        self.client.force_authenticate(user=self.production_partner1)
         url = reverse('job-reject', kwargs={'pk': self.job.id})
         response = self.client.post(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.job.refresh_from_db()
-        self.assertEqual(self.job.printer, self.printer2)
+        self.assertEqual(self.job.production_partner, self.production_partner2)
         self.assertEqual(self.job.status, 'JOB_PENDING_ACCEPT')
-        self.assertIn(str(self.printer1.id), self.job.tried_printer_ids)
+        self.assertIn(str(self.production_partner1.id), self.job.tried_production_partner_ids)
         self.assertEqual(self.job.reroute_count, 1)
 
-    def test_printer_reject_when_no_printers_left_stalls_job(self):
-        self.client.force_authenticate(user=self.printer1)
+    def test_production_partner_reject_when_no_printers_left_stalls_job(self):
+        self.client.force_authenticate(user=self.production_partner1)
         url = reverse('job-reject', kwargs={'pk': self.job.id})
         self.client.post(url, format='json')
 
-        self.client.force_authenticate(user=self.printer2)
+        self.client.force_authenticate(user=self.production_partner2)
         url = reverse('job-reject', kwargs={'pk': self.job.id})
         response = self.client.post(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         
         self.job.refresh_from_db()
-        self.assertIsNone(self.job.printer)
+        self.assertIsNone(self.job.production_partner)
         self.assertEqual(self.job.status, 'JOB_STALLED')
         self.assertEqual(self.job.reroute_count, 2)
-        self.assertIn(str(self.printer1.id), self.job.tried_printer_ids)
-        self.assertIn(str(self.printer2.id), self.job.tried_printer_ids)
+        self.assertIn(str(self.production_partner1.id), self.job.tried_production_partner_ids)
+        self.assertIn(str(self.production_partner2.id), self.job.tried_production_partner_ids)
 
     def test_update_status_milestones(self):
-        self.client.force_authenticate(user=self.printer1)
+        self.client.force_authenticate(user=self.production_partner1)
         url = reverse('job-update-status', kwargs={'pk': self.job.id})
         
         response = self.client.post(url, {'status': 'JOB_PRINTING'}, format='json')

@@ -96,10 +96,10 @@ class BookingPrintJobTriggerTests(APITestCase):
             password='Password123!',
             role='advertiser'
         )
-        self.printer = User.objects.create_user(
-            email='printer@example.com',
+        self.production_partner = User.objects.create_user(
+            email='production_partner@example.com',
             password='Password123!',
-            role='printer'
+            role='production-partner'
         )
         self.space = Space.objects.create(
             owner=self.owner,
@@ -128,7 +128,7 @@ class BookingPrintJobTriggerTests(APITestCase):
         self.assertTrue(hasattr(self.booking, 'print_job'))
         
         print_job = self.booking.print_job
-        self.assertEqual(print_job.printer, self.printer)
+        self.assertEqual(print_job.production_partner, self.production_partner)
         self.assertEqual(print_job.status, 'JOB_PENDING_ACCEPT')
         self.assertEqual(print_job.material, 'Standard Vinyl')
         self.assertEqual(print_job.size, '24x36')

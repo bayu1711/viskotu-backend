@@ -41,7 +41,7 @@ class LoginSerializer(serializers.Serializer):
 
 
 class ChangeRoleSerializer(serializers.Serializer):
-    role = serializers.ChoiceField(choices=['advertiser', 'space-owner', 'printer', 'admin'])
+    role = serializers.ChoiceField(choices=['advertiser', 'space-owner', 'production-partner', 'admin'])
 
 
 class PasswordResetRequestSerializer(serializers.Serializer):

@@ -32,13 +32,13 @@ class PrintJob(models.Model):
     booking = models.OneToOneField(
         'bookings.Booking', on_delete=models.CASCADE, related_name='print_job', null=True, blank=True
     )
-    printer = models.ForeignKey(
+    production_partner = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='print_jobs'
     )
 
     status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='JOB_PENDING_ACCEPT')
     priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='medium')
-    printer_source = models.CharField(max_length=30, choices=SOURCE_CHOICES, default='platform-assigned')
+    production_partner_source = models.CharField(max_length=30, choices=SOURCE_CHOICES, default='platform-assigned')
 
     # Specs
     material = models.CharField(max_length=100, blank=True)
@@ -57,7 +57,7 @@ class PrintJob(models.Model):
 
     # Rerouting tracking
     reroute_count = models.IntegerField(default=0)
-    tried_printer_ids = models.JSONField(default=list)
+    tried_production_partner_ids = models.JSONField(default=list)
 
     # Proof of play
     proof_file = models.FileField(upload_to='proof_of_play/', null=True, blank=True)
@@ -74,26 +74,26 @@ class PrintJob(models.Model):
     def __str__(self):
         return f'Job {self.id} [{self.status}]'
 
-    def reroute_to_next_printer(self):
+    def reroute_to_next_production_partner(self):
         from django.contrib.auth import get_user_model
         from django.utils import timezone
         import datetime
         User = get_user_model()
 
-        if self.printer and str(self.printer.id) not in self.tried_printer_ids:
-            self.tried_printer_ids.append(str(self.printer.id))
+        if self.production_partner and str(self.production_partner.id) not in self.tried_production_partner_ids:
+            self.tried_production_partner_ids.append(str(self.production_partner.id))
 
         self.reroute_count += 1
 
-        next_printer = User.objects.filter(role='printer').exclude(id__in=self.tried_printer_ids).first()
+        next_printer = User.objects.filter(role='production-partner').exclude(id__in=self.tried_production_partner_ids).first()
         if next_printer:
-            self.printer = next_printer
+            self.production_partner = next_printer
             self.status = 'JOB_PENDING_ACCEPT'
             self.accept_deadline = timezone.now() + datetime.timedelta(hours=24)
-            self.save(update_fields=['printer', 'status', 'accept_deadline', 'tried_printer_ids', 'reroute_count', 'updated_at'])
+            self.save(update_fields=['production_partner', 'status', 'accept_deadline', 'tried_production_partner_ids', 'reroute_count', 'updated_at'])
             return next_printer
         else:
-            self.printer = None
+            self.production_partner = None
             self.status = 'JOB_STALLED'
-            self.save(update_fields=['printer', 'status', 'tried_printer_ids', 'reroute_count', 'updated_at'])
+            self.save(update_fields=['production_partner', 'status', 'tried_production_partner_ids', 'reroute_count', 'updated_at'])
             return None

@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name='printjob',
-            name='printer',
+            name='production_partner',
             field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='print_jobs', to=settings.AUTH_USER_MODEL),
         ),
     ]

@@ -14,12 +14,12 @@ class PrintJobViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if user.is_staff and self.request.query_params.get('all') == 'true':
             return PrintJob.objects.all()
-        return PrintJob.objects.filter(Q(printer=user) | Q(booking__advertiser=user) | Q(booking__space__owner=user)).distinct()
+        return PrintJob.objects.filter(Q(production_partner=user) | Q(booking__advertiser=user) | Q(booking__space__owner=user)).distinct()
 
     @action(detail=True, methods=['post'])
     def accept(self, request, pk=None):
         job = self.get_object()
-        if job.printer != request.user and not request.user.is_staff:
+        if job.production_partner != request.user and not request.user.is_staff:
             return Response({'detail': 'Not authorized to accept this job.'}, status=status.HTTP_403_FORBIDDEN)
         if job.status != 'JOB_PENDING_ACCEPT':
             return Response({'detail': f'Cannot accept job with status {job.status}.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -31,17 +31,17 @@ class PrintJobViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def reject(self, request, pk=None):
         job = self.get_object()
-        if job.printer != request.user and not request.user.is_staff:
+        if job.production_partner != request.user and not request.user.is_staff:
             return Response({'detail': 'Not authorized to reject this job.'}, status=status.HTTP_403_FORBIDDEN)
         if job.status != 'JOB_PENDING_ACCEPT':
             return Response({'detail': f'Cannot reject job with status {job.status}.'}, status=status.HTTP_400_BAD_REQUEST)
-        job.reroute_to_next_printer()
+        job.reroute_to_next_production_partner()
         return Response(PrintJobSerializer(job, context={'request': request}).data)
 
     @action(detail=True, methods=['post'])
     def update_status(self, request, pk=None):
         job = self.get_object()
-        if job.printer != request.user and not request.user.is_staff:
+        if job.production_partner != request.user and not request.user.is_staff:
             return Response({'detail': 'Not authorized to update this job.'}, status=status.HTTP_403_FORBIDDEN)
         
         new_status = request.data.get('status')

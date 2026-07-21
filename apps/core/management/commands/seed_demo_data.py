@@ -38,10 +38,10 @@ class Command(BaseCommand):
                 'kyc_status': 'verified',
             },
             {
-                'email': 'printer@demo.com',
+                'email': 'production-partner@demo.com',
                 'first_name': 'Paul',
-                'last_name': 'Printer',
-                'role': 'printer',
+                'last_name': 'Production Partner',
+                'role': 'production_partner',
                 'company_name': 'Prime Print & Install',
                 'phone': '+1 (555) 010-3003',
                 'kyc_status': 'verified',
@@ -82,7 +82,7 @@ class Command(BaseCommand):
             self.stdout.write(f"  [{status_text}] User: {user.email} ({user.role})")
 
         owner = users['space-owner']
-        printer = users['printer']
+        production_partner = users['production_partner']
         advertiser = users['advertiser']
 
         # 2. Create Demo Spaces
@@ -109,7 +109,7 @@ class Command(BaseCommand):
                 'is_featured': True,
                 'impressions_estimate': '45,000/day',
                 'fulfillment_type': 'managed_printing',
-                'preferred_printer': printer,
+                'preferred_production_partner': production_partner,
             },
             {
                 'name': 'Transit Delivery Fleet Van Wrap #104',
@@ -133,7 +133,7 @@ class Command(BaseCommand):
                 'is_featured': True,
                 'impressions_estimate': '28,000/day',
                 'fulfillment_type': 'managed_printing',
-                'preferred_printer': printer,
+                'preferred_production_partner': production_partner,
             },
             {
                 'name': 'Tech Hub Rooftop Billboard',
@@ -157,7 +157,7 @@ class Command(BaseCommand):
                 'is_featured': True,
                 'impressions_estimate': '110,000/day',
                 'fulfillment_type': 'managed_printing',
-                'preferred_printer': printer,
+                'preferred_production_partner': production_partner,
             },
             {
                 'name': 'Artisan Bakery Side Awning Display',
@@ -181,7 +181,7 @@ class Command(BaseCommand):
                 'is_featured': False,
                 'impressions_estimate': '18,500/day',
                 'fulfillment_type': 'managed_printing',
-                'preferred_printer': printer,
+                'preferred_production_partner': production_partner,
             },
             {
                 'name': 'Eco Courier E-Bike Rear Delivery Box',
@@ -205,7 +205,7 @@ class Command(BaseCommand):
                 'is_featured': False,
                 'impressions_estimate': '9,200/day',
                 'fulfillment_type': 'managed_printing',
-                'preferred_printer': printer,
+                'preferred_production_partner': production_partner,
             },
             {
                 'name': 'Austin Convention Center Corner Storefront',
@@ -229,7 +229,7 @@ class Command(BaseCommand):
                 'is_featured': True,
                 'impressions_estimate': '62,000/day',
                 'fulfillment_type': 'managed_printing',
-                'preferred_printer': printer,
+                'preferred_production_partner': production_partner,
             },
         ]
 
@@ -299,7 +299,7 @@ class Command(BaseCommand):
             job, _ = PrintJob.objects.get_or_create(
                 booking=booking,
                 defaults={
-                    'printer': printer,
+                    'production_partner': production_partner,
                     'status': 'JOB_PRINTING',
                     'priority': 'high',
                     'material': s1.material,
@@ -316,6 +316,6 @@ class Command(BaseCommand):
                     }
                 }
             )
-            self.stdout.write(f"  [PrintJob] Job for {s1.name} assigned to {printer.company_name}")
+            self.stdout.write(f"  [PrintJob] Job for {s1.name} assigned to {production_partner.company_name}")
 
         self.stdout.write(self.style.SUCCESS('Successfully seeded demo database!'))

@@ -27,11 +27,11 @@ class BookingViewSet(viewsets.ModelViewSet):
         
         instance = serializer.save()
         if instance.status in ['confirmed', 'paid'] and not hasattr(instance, 'print_job'):
-            # Find a printer (e.g. first available)
-            printer = User.objects.filter(role='printer').first()
+            # Find a production_partner (e.g. first available)
+            production_partner = User.objects.filter(role='production-partner').first()
             PrintJob.objects.create(
                 booking=instance,
-                printer=printer,
+                production_partner=production_partner,
                 status='JOB_PENDING_ACCEPT',
                 material='Standard Vinyl',
                 size='24x36',
