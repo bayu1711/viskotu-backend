@@ -26,7 +26,7 @@ class SpaceSerializer(serializers.ModelSerializer):
             'id', 'owner', 'name', 'description', 'category', 'item_type',
             'address', 'city', 'state', 'zip_code', 'latitude', 'longitude',
             'width', 'height', 'material', 'min_dpi', 'accepted_formats',
-            'base_rate', 'billing_period', 'min_booking_duration',
+            'base_rate', 'billing_period', 'min_placement_duration',
             'bulk_discount_enabled', 'bulk_discount_percentage',
             'fulfillment_type', 'self_fulfillment_reason',
             'print_partner_routing', 'preferred_production_partner',

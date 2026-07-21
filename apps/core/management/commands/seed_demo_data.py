@@ -243,7 +243,7 @@ class Command(BaseCommand):
             created_spaces.append(space)
             self.stdout.write(f"  [Space] {space.name} (${space.base_rate}/{space.billing_period})")
 
-        # 3. Create Demo Campaigns & Bookings
+        # 3. Create Demo Campaigns & Ad Placements
         if created_spaces:
             s1 = created_spaces[0]
             s2 = created_spaces[1]

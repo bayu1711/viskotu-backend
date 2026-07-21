@@ -15,11 +15,11 @@ class AdPlacement(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     advertiser = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='bookings'
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='ad_placements'
     )
-    space = models.ForeignKey('spaces.Space', on_delete=models.CASCADE, related_name='bookings')
+    space = models.ForeignKey('spaces.Space', on_delete=models.CASCADE, related_name='ad_placements')
     campaign = models.ForeignKey(
-        'campaigns.Campaign', on_delete=models.SET_NULL, null=True, blank=True, related_name='bookings'
+        'campaigns.Campaign', on_delete=models.SET_NULL, null=True, blank=True, related_name='ad_placements'
     )
 
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
@@ -45,4 +45,4 @@ class AdPlacement(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        return f'Booking {self.id} — {self.advertiser.email} @ {self.space.name}'
+        return f'Ad Placement {self.id} — {self.advertiser.email} @ {self.space.name}'

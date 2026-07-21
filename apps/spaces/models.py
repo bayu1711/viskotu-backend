@@ -57,7 +57,7 @@ class Space(models.Model):
         choices=[('hourly','Hourly'),('daily','Daily'),('weekly','Weekly'),('monthly','Monthly'),('yearly','Yearly')],
         default='daily'
     )
-    min_booking_duration = models.IntegerField(default=1)
+    min_placement_duration = models.IntegerField(default=1)
     bulk_discount_enabled = models.BooleanField(default=False)
     bulk_discount_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0)
 

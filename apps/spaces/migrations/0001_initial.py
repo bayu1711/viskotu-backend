@@ -34,7 +34,7 @@ class Migration(migrations.Migration):
                 ('accepted_formats', models.JSONField(default=list)),
                 ('base_rate', models.DecimalField(decimal_places=2, max_digits=10)),
                 ('billing_period', models.CharField(choices=[('hourly', 'Hourly'), ('daily', 'Daily'), ('weekly', 'Weekly'), ('monthly', 'Monthly'), ('yearly', 'Yearly')], default='daily', max_length=20)),
-                ('min_booking_duration', models.IntegerField(default=1)),
+                ('min_placement_duration', models.IntegerField(default=1)),
                 ('bulk_discount_enabled', models.BooleanField(default=False)),
                 ('bulk_discount_percentage', models.DecimalField(decimal_places=2, default=0, max_digits=5)),
                 ('fulfillment_type', models.CharField(choices=[('managed_printing', 'Managed Printing'), ('self_fulfillment', 'Self Fulfillment')], default='managed_printing', max_length=20)),

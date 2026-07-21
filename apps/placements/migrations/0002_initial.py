@@ -20,16 +20,16 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='adplacement',
             name='advertiser',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='bookings', to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='ad_placements', to=settings.AUTH_USER_MODEL),
         ),
         migrations.AddField(
             model_name='adplacement',
             name='campaign',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='bookings', to='campaigns.campaign'),
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='ad_placements', to='campaigns.campaign'),
         ),
         migrations.AddField(
             model_name='adplacement',
             name='space',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='bookings', to='spaces.space'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='ad_placements', to='spaces.space'),
         ),
     ]

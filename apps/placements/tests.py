@@ -31,7 +31,7 @@ class AdPlacementCreationTests(APITestCase):
         )
         self.client.force_authenticate(user=self.advertiser)
 
-    def test_create_booking_success(self):
+    def test_create_ad_placement_success(self):
         url = reverse('ad_placement-list')
         data = {
             'space': str(self.space.id),
@@ -45,7 +45,7 @@ class AdPlacementCreationTests(APITestCase):
         self.assertEqual(str(response.data['advertiser']), str(self.advertiser.id))
         self.assertEqual(AdPlacement.objects.count(), 1)
 
-    def test_create_booking_overlapping_failure(self):
+    def test_create_ad_placement_overlapping_failure(self):
         AdPlacement.objects.create(
             advertiser=self.advertiser,
             space=self.space,
@@ -65,7 +65,7 @@ class AdPlacementCreationTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('detail', response.data)
 
-    def test_create_booking_blocked_date_failure(self):
+    def test_create_ad_placement_blocked_date_failure(self):
         SpaceAvailability.objects.create(
             space=self.space,
             date=datetime.date(2026, 8, 3),
