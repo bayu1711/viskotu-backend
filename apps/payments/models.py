@@ -13,8 +13,8 @@ class Payment(models.Model):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    booking = models.ForeignKey(
-        'bookings.Booking', on_delete=models.CASCADE, related_name='payments', null=True, blank=True
+    ad_placement = models.ForeignKey(
+        'placements.AdPlacement', on_delete=models.CASCADE, related_name='payments', null=True, blank=True
     )
     payer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='payments_made')
 
@@ -48,8 +48,8 @@ class Payout(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     recipient = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='payouts')
-    booking = models.ForeignKey(
-        'bookings.Booking', on_delete=models.SET_NULL, related_name='payouts', null=True, blank=True
+    ad_placement = models.ForeignKey(
+        'placements.AdPlacement', on_delete=models.SET_NULL, related_name='payouts', null=True, blank=True
     )
 
     amount = models.DecimalField(max_digits=12, decimal_places=2)

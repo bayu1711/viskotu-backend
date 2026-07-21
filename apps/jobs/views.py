@@ -14,7 +14,7 @@ class PrintJobViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if user.is_staff and self.request.query_params.get('all') == 'true':
             return PrintJob.objects.all()
-        return PrintJob.objects.filter(Q(production_partner=user) | Q(booking__advertiser=user) | Q(booking__space__owner=user)).distinct()
+        return PrintJob.objects.filter(Q(production_partner=user) | Q(ad_placement__advertiser=user) | Q(ad_placement__space__owner=user)).distinct()
 
     @action(detail=True, methods=['post'])
     def accept(self, request, pk=None):

@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.test import APITestCase
 from rest_framework import status
 from apps.spaces.models import Space
-from apps.bookings.models import Booking
+from apps.placements.models import AdPlacement
 from apps.jobs.models import PrintJob
 import datetime
 
@@ -39,7 +39,7 @@ class PrintJobBiddingReroutingTests(APITestCase):
             base_rate='200.00',
             billing_period='daily'
         )
-        self.booking = Booking.objects.create(
+        self.ad_placement = AdPlacement.objects.create(
             advertiser=self.advertiser,
             space=self.space,
             start_date=datetime.date(2026, 10, 1),
@@ -48,7 +48,7 @@ class PrintJobBiddingReroutingTests(APITestCase):
             status='confirmed'
         )
         self.job = PrintJob.objects.create(
-            booking=self.booking,
+            ad_placement=self.ad_placement,
             production_partner=self.production_partner1,
             status='JOB_PENDING_ACCEPT',
             material='Standard Vinyl',

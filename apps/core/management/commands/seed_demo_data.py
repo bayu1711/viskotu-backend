@@ -7,7 +7,7 @@ import datetime
 from apps.users.models import User
 from apps.spaces.models import Space, SpacePhoto
 from apps.campaigns.models import Campaign, CreativeAsset
-from apps.bookings.models import Booking
+from apps.placements.models import AdPlacement
 from apps.jobs.models import PrintJob
 
 
@@ -279,8 +279,8 @@ class Command(BaseCommand):
                 }
             )
 
-            # Create Booking
-            booking, _ = Booking.objects.get_or_create(
+            # Create AdPlacement
+            ad_placement, _ = AdPlacement.objects.get_or_create(
                 advertiser=advertiser,
                 space=s1,
                 campaign=camp,
@@ -293,11 +293,11 @@ class Command(BaseCommand):
                     'paid_at': timezone.now(),
                 }
             )
-            self.stdout.write(f"  [Booking] {booking.id} ({booking.status})")
+            self.stdout.write(f"  [AdPlacement] {ad_placement.id} ({ad_placement.status})")
 
             # Create Print Job for Printer
             job, _ = PrintJob.objects.get_or_create(
-                booking=booking,
+                ad_placement=ad_placement,
                 defaults={
                     'production_partner': production_partner,
                     'status': 'JOB_PRINTING',

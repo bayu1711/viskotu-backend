@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Payment, Payout
-from apps.bookings.serializers import BookingSerializer
+from apps.placements.serializers import AdPlacementSerializer
 
 class PaymentSerializer(serializers.ModelSerializer):
     class Meta:

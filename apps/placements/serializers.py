@@ -1,16 +1,16 @@
 from rest_framework import serializers
-from .models import Booking
+from .models import AdPlacement
 from apps.spaces.serializers import SpaceSerializer
 from apps.campaigns.serializers import CampaignSerializer
 from apps.users.serializers import UserSerializer
 
-class BookingSerializer(serializers.ModelSerializer):
+class AdPlacementSerializer(serializers.ModelSerializer):
     space_detail = SpaceSerializer(source='space', read_only=True)
     advertiser_detail = UserSerializer(source='advertiser', read_only=True)
     campaign_detail = CampaignSerializer(source='campaign', read_only=True)
 
     class Meta:
-        model = Booking
+        model = AdPlacement
         fields = [
             'id', 'advertiser', 'space', 'space_detail', 'advertiser_detail', 'campaign', 'campaign_detail',
             'status', 'start_date', 'end_date', 'total_price', 'platform_fee',
@@ -31,8 +31,8 @@ class BookingSerializer(serializers.ModelSerializer):
         if space and start_date and end_date and status not in ['cancelled', 'disputed']:
             from apps.spaces.models import SpaceAvailability
 
-            # Check existing overlapping bookings
-            overlapping = Booking.objects.filter(
+            # Check existing overlapping ad_placements
+            overlapping = AdPlacement.objects.filter(
                 space=space,
                 status__in=['pending', 'confirmed', 'paid', 'completed'],
                 start_date__lte=end_date,

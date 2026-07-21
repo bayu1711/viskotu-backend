@@ -29,8 +29,8 @@ class PrintJob(models.Model):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    booking = models.OneToOneField(
-        'bookings.Booking', on_delete=models.CASCADE, related_name='print_job', null=True, blank=True
+    ad_placement = models.OneToOneField(
+        'placements.AdPlacement', on_delete=models.CASCADE, related_name='print_job', null=True, blank=True
     )
     production_partner = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='print_jobs'

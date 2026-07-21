@@ -3,14 +3,14 @@ from django.contrib.auth import get_user_model
 from rest_framework.test import APITestCase
 from rest_framework import status
 from apps.spaces.models import Space, SpaceAvailability
-from apps.bookings.models import Booking
+from apps.placements.models import AdPlacement
 from apps.jobs.models import PrintJob
 import datetime
 
 User = get_user_model()
 
 
-class BookingCreationTests(APITestCase):
+class AdPlacementCreationTests(APITestCase):
     def setUp(self):
         self.owner = User.objects.create_user(
             email='owner@example.com',
@@ -32,7 +32,7 @@ class BookingCreationTests(APITestCase):
         self.client.force_authenticate(user=self.advertiser)
 
     def test_create_booking_success(self):
-        url = reverse('booking-list')
+        url = reverse('ad_placement-list')
         data = {
             'space': str(self.space.id),
             'start_date': '2026-08-01',
@@ -43,10 +43,10 @@ class BookingCreationTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['status'], 'pending')
         self.assertEqual(str(response.data['advertiser']), str(self.advertiser.id))
-        self.assertEqual(Booking.objects.count(), 1)
+        self.assertEqual(AdPlacement.objects.count(), 1)
 
     def test_create_booking_overlapping_failure(self):
-        Booking.objects.create(
+        AdPlacement.objects.create(
             advertiser=self.advertiser,
             space=self.space,
             start_date=datetime.date(2026, 8, 5),
@@ -54,7 +54,7 @@ class BookingCreationTests(APITestCase):
             total_price='1000.00',
             status='confirmed'
         )
-        url = reverse('booking-list')
+        url = reverse('ad_placement-list')
         data = {
             'space': str(self.space.id),
             'start_date': '2026-08-01',
@@ -72,7 +72,7 @@ class BookingCreationTests(APITestCase):
             is_blocked=True,
             reason='Maintenance'
         )
-        url = reverse('booking-list')
+        url = reverse('ad_placement-list')
         data = {
             'space': str(self.space.id),
             'start_date': '2026-08-01',
@@ -84,7 +84,7 @@ class BookingCreationTests(APITestCase):
         self.assertIn('detail', response.data)
 
 
-class BookingPrintJobTriggerTests(APITestCase):
+class AdPlacementPrintJobTriggerTests(APITestCase):
     def setUp(self):
         self.owner = User.objects.create_user(
             email='owner2@example.com',
@@ -108,7 +108,7 @@ class BookingPrintJobTriggerTests(APITestCase):
             base_rate='150.00',
             billing_period='daily'
         )
-        self.booking = Booking.objects.create(
+        self.ad_placement = AdPlacement.objects.create(
             advertiser=self.advertiser,
             space=self.space,
             start_date=datetime.date(2026, 9, 1),
@@ -119,15 +119,15 @@ class BookingPrintJobTriggerTests(APITestCase):
 
     def test_status_change_to_confirmed_triggers_print_job(self):
         self.client.force_authenticate(user=self.advertiser)
-        url = reverse('booking-detail', kwargs={'pk': self.booking.id})
+        url = reverse('ad_placement-detail', kwargs={'pk': self.ad_placement.id})
         response = self.client.patch(url, {'status': 'confirmed'}, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         
-        self.booking.refresh_from_db()
-        self.assertEqual(self.booking.status, 'confirmed')
-        self.assertTrue(hasattr(self.booking, 'print_job'))
+        self.ad_placement.refresh_from_db()
+        self.assertEqual(self.ad_placement.status, 'confirmed')
+        self.assertTrue(hasattr(self.ad_placement, 'print_job'))
         
-        print_job = self.booking.print_job
+        print_job = self.ad_placement.print_job
         self.assertEqual(print_job.production_partner, self.production_partner)
         self.assertEqual(print_job.status, 'JOB_PENDING_ACCEPT')
         self.assertEqual(print_job.material, 'Standard Vinyl')

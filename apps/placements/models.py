@@ -3,7 +3,7 @@ from django.db import models
 from django.conf import settings
 
 
-class Booking(models.Model):
+class AdPlacement(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Pending'),
         ('confirmed', 'Confirmed'),
@@ -41,7 +41,7 @@ class Booking(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'bookings'
+        db_table = 'ad_placements'
         ordering = ['-created_at']
 
     def __str__(self):

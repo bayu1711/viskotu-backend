@@ -12,7 +12,7 @@ Welcome to **Viskotu** ("we," "our," or "us"). We respect your privacy and are c
 
 ## 1. Information We Collect
 
-We collect information that you provide directly to us when setting up an account, listing space inventory, booking ad placements, or communicating with customer support:
+We collect information that you provide directly to us when setting up an account, listing space inventory, ad_placement ad placements, or communicating with customer support:
 
 * **Account & Contact Information:** Name, email address, phone number, company name, and profile avatar.
 * **Verification & KYC Data:** Government-issued identification, business registration documents, and tax identification numbers required to verify Space Owners and Printers before payouts.
@@ -25,10 +25,10 @@ We collect information that you provide directly to us when setting up an accoun
 
 We use the collected information for the following core purposes:
 
-1. **Platform Operation:** To facilitate bookings, coordinate print job assignments, and maintain real-time campaign status tracking across Advertisers, Space Owners, and Printers.
+1. **Platform Operation:** To facilitate ad_placements, coordinate print job assignments, and maintain real-time campaign status tracking across Advertisers, Space Owners, and Printers.
 2. **Account Security & KYC:** To verify identity, prevent fraud, enforce our Service Level Agreements (SLAs), and maintain system integrity.
 3. **Financial Processing:** To process escrow payments, calculate commission splits, and disburse payouts upon verified ad placement completion (`POP_VERIFIED`).
-4. **Platform Communications:** To send automated notifications regarding booking status changes, print job deadlines, dispute alerts, and system operational updates.
+4. **Platform Communications:** To send automated notifications regarding ad_placement status changes, print job deadlines, dispute alerts, and system operational updates.
 5. **Continuous Improvement:** To analyze usage trends, optimize platform reliability algorithms, and enhance user experience.
 
 ---
@@ -55,7 +55,7 @@ Depending on your jurisdiction, you may have the right to:
 
 * Access, review, and request a copy of the personal data we hold about you.
 * Request correction of inaccurate or incomplete profile information.
-* Request account deletion and anonymization of personal data, subject to active booking obligations and mandatory regulatory retention periods.
+* Request account deletion and anonymization of personal data, subject to active ad_placement obligations and mandatory regulatory retention periods.
 * Opt out of non-essential promotional communications at any time.
 
 ---
@@ -96,11 +96,11 @@ To use Viskotu, you must register for an account and provide accurate, complete 
 
 ---
 
-## 3. Booking Workflow & Escrow Payments
+## 3. AdPlacement Workflow & Escrow Payments
 
-All bookings executed on Viskotu follow a rigorous, stage-gated lifecycle:
+All ad_placements executed on Viskotu follow a rigorous, stage-gated lifecycle:
 
-1. **Campaign Creation & Escrow:** When an Advertiser initiates a booking, the total campaign cost (including space rental, printing, and platform service fees) is deposited into secure platform escrow.
+1. **Campaign Creation & Escrow:** When an Advertiser initiates a ad_placement, the total campaign cost (including space rental, printing, and platform service fees) is deposited into secure platform escrow.
 2. **Job Acceptance:** The assigned Printer must accept the print job within the designated SLA window (`SLA_PRINT_ACCEPTANCE`).
 3. **Production & Installation:** The Printer produces the physical assets and installs them at the Space Owner's designated location.
 4. **Proof of Performance (POP):** The Printer or Space Owner uploads photographic and geotagged proof (`POP_AWAITING`). Once verified (`POP_VERIFIED`), escrow funds are released according to the agreed commission schedule.
@@ -120,7 +120,7 @@ To ensure platform reliability and maintain trust across parties, users agree to
 
 Cancellations are governed by the platform's standardized cancellation policy (`CancellationTerms`):
 
-* **Before Print Job Acceptance:** Advertisers may cancel bookings with a full refund of escrowed funds, less standard payment processing fees.
+* **Before Print Job Acceptance:** Advertisers may cancel ad_placements with a full refund of escrowed funds, less standard payment processing fees.
 * **After Print Production Has Begun:** If a campaign is canceled after the Printer has initiated material production, printing costs are non-refundable and will be disbursed to the Printer to cover expenses.
 * **Owner/Printer Default:** If a Space Owner or Printer defaults or fails to fulfill their obligations, the Advertiser receives a 100% full refund or immediate replacement placement at no extra cost.
 

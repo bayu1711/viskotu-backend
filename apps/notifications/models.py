@@ -5,8 +5,8 @@ from django.conf import settings
 
 class Notification(models.Model):
     TYPE_CHOICES = [
-        ('booking_confirmed', 'Booking Confirmed'),
-        ('booking_cancelled', 'Booking Cancelled'),
+        ('ad_placement_confirmed', 'AdPlacement Confirmed'),
+        ('ad_placement_cancelled', 'AdPlacement Cancelled'),
         ('payment_received', 'Payment Received'),
         ('payment_failed', 'Payment Failed'),
         ('campaign_active', 'Campaign Active'),

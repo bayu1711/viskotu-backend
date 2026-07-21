@@ -37,7 +37,7 @@ LOCAL_APPS = [
     'apps.users',
     'apps.spaces',
     'apps.campaigns',
-    'apps.bookings',
+    'apps.placements',
     'apps.jobs',
     'apps.messages',
     'apps.notifications',

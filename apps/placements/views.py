@@ -1,19 +1,19 @@
 from rest_framework import viewsets, permissions
-from .models import Booking
-from .serializers import BookingSerializer
+from .models import AdPlacement
+from .serializers import AdPlacementSerializer
 from django.db.models import Q
 
-class BookingViewSet(viewsets.ModelViewSet):
-    serializer_class = BookingSerializer
+class AdPlacementViewSet(viewsets.ModelViewSet):
+    serializer_class = AdPlacementSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
         if user.is_staff and self.request.query_params.get('all') == 'true':
-            return Booking.objects.all()
+            return AdPlacement.objects.all()
         
-        # Space owner sees bookings for their spaces.
-        return Booking.objects.filter(
+        # Space owner sees ad_placements for their spaces.
+        return AdPlacement.objects.filter(
             Q(advertiser=user) | Q(space__owner=user)
         )
 
@@ -30,7 +30,7 @@ class BookingViewSet(viewsets.ModelViewSet):
             # Find a production_partner (e.g. first available)
             production_partner = User.objects.filter(role='production-partner').first()
             PrintJob.objects.create(
-                booking=instance,
+                ad_placement=instance,
                 production_partner=production_partner,
                 status='JOB_PENDING_ACCEPT',
                 material='Standard Vinyl',
