@@ -42,6 +42,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_email_verified = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
+    
+    # OTP verification
+    otp_code = models.CharField(max_length=6, blank=True)
+    otp_created_at = models.DateTimeField(null=True, blank=True)
 
     # Profile extras
     phone = models.CharField(max_length=30, blank=True)
@@ -76,12 +80,18 @@ class User(AbstractBaseUser, PermissionsMixin):
         return f'{self.first_name} {self.last_name}'.strip() or self.email
 
     def send_verification_email(self, request=None):
-        token = default_token_generator.make_token(self)
-        uid = urlsafe_base64_encode(force_bytes(self.pk))
-        verify_url = f"http://localhost:3000/verify-email?uid={uid}&token={token}"
+        import random
+        from django.utils import timezone
+        
+        # Generate 6 digit OTP
+        otp = f"{random.randint(100000, 999999)}"
+        self.otp_code = otp
+        self.otp_created_at = timezone.now()
+        self.save(update_fields=['otp_code', 'otp_created_at'])
+
         send_mail(
             subject="Verify your Viskotu email address",
-            message=f"Hi {self.name},\n\nPlease click the link below to verify your email address:\n\n{verify_url}\n\nThank you,\nViskotu Team",
+            message=f"Hi {self.name},\n\nYour email verification code is: {otp}\n\nThis code will expire in 15 minutes.\n\nThank you,\nViskotu Team",
             from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@viskotu.com'),
             recipient_list=[self.email],
             fail_silently=False,

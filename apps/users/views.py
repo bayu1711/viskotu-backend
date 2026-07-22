@@ -152,17 +152,25 @@ class VerifyEmailView(APIView):
     def post(self, request):
         serializer = VerifyEmailSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        try:
-            uid = force_str(urlsafe_base64_decode(serializer.validated_data['uid']))
-            user = User.objects.get(pk=uid)
-        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-            return Response({'detail': 'Invalid verification link.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        email = serializer.validated_data.get('email')
+        otp = serializer.validated_data.get('otp')
+        
+        user = User.objects.filter(email=email).first()
+        if not user:
+            return Response({'detail': 'User not found.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        if not default_token_generator.check_token(user, serializer.validated_data['token']):
-            return Response({'detail': 'Invalid or expired token.'}, status=status.HTTP_400_BAD_REQUEST)
+        if not user.otp_code or user.otp_code != otp:
+            return Response({'detail': 'Invalid verification code.'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        from django.utils import timezone
+        from datetime import timedelta
+        if not user.otp_created_at or timezone.now() > user.otp_created_at + timedelta(minutes=15):
+            return Response({'detail': 'Verification code expired.'}, status=status.HTTP_400_BAD_REQUEST)
 
         user.is_email_verified = True
-        user.save(update_fields=['is_email_verified'])
+        user.otp_code = ''
+        user.save(update_fields=['is_email_verified', 'otp_code'])
         return Response({'detail': 'Email verified.'})
 
 
