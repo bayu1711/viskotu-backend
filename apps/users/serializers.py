@@ -1,12 +1,20 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
+from .models import ProductionPartnerProfile
 
 User = get_user_model()
 
 
+class ProductionPartnerProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductionPartnerProfile
+        fields = '__all__'
+
+
 class UserSerializer(serializers.ModelSerializer):
     name = serializers.CharField(read_only=True)
+    production_partner_profile = ProductionPartnerProfileSerializer(read_only=True)
 
     class Meta:
         model = User
@@ -14,6 +22,7 @@ class UserSerializer(serializers.ModelSerializer):
             'id', 'email', 'first_name', 'last_name', 'name',
             'role', 'is_email_verified', 'phone', 'avatar',
             'company_name', 'bio', 'kyc_status', 'created_at',
+            'production_partner_profile',
         ]
         read_only_fields = ['id', 'email', 'is_email_verified', 'created_at']
 

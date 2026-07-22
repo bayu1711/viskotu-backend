@@ -1,8 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status, permissions
-from .models import SiteSettings
-from .serializers import SiteSettingsSerializer
+from rest_framework import status, permissions, viewsets
+from .models import SiteSettings, SupportTicket, SLAEvent
+from .serializers import SiteSettingsSerializer, SupportTicketSerializer, SLAEventSerializer
 
 
 class SiteSettingsView(APIView):
@@ -43,3 +43,27 @@ class SiteSettingsView(APIView):
         if getattr(user, 'role', None) == 'admin':
             return True
         return False
+
+
+class SupportTicketViewSet(viewsets.ModelViewSet):
+    queryset = SupportTicket.objects.all()
+    serializer_class = SupportTicketSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if getattr(user, 'is_staff', False) or getattr(user, 'is_superuser', False) or getattr(user, 'role', None) == 'admin':
+            return SupportTicket.objects.all()
+        return SupportTicket.objects.filter(user=user)
+
+
+class SLAEventViewSet(viewsets.ModelViewSet):
+    queryset = SLAEvent.objects.all()
+    serializer_class = SLAEventSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_queryset(self):
+        user = self.request.user
+        if getattr(user, 'is_staff', False) or getattr(user, 'is_superuser', False) or getattr(user, 'role', None) == 'admin':
+            return SLAEvent.objects.all()
+        return SLAEvent.objects.none()

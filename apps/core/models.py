@@ -178,3 +178,34 @@ class SiteSettings(models.Model):
         """
         obj, _ = cls.objects.get_or_create(id=1)
         return obj
+
+
+import uuid
+from django.conf import settings
+
+class SupportTicket(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='support_tickets')
+    subject = models.CharField(max_length=255)
+    status = models.CharField(max_length=50, default='open')
+    priority = models.CharField(max_length=50, default='medium')
+    category = models.CharField(max_length=100, default='general')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Ticket {self.id} - {self.subject}"
+
+
+class SLAEvent(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    related_entity_id = models.CharField(max_length=255)
+    entity_type = models.CharField(max_length=50) # 'print_job', 'installation', etc
+    event_type = models.CharField(max_length=50) # 'deadline_missed', 'quality_issue'
+    severity = models.CharField(max_length=50, default='warning')
+    description = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+    resolved = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"SLA Event {self.event_type} - {self.severity}"

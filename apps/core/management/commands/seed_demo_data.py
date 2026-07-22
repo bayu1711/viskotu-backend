@@ -4,11 +4,13 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 import datetime
 
-from apps.users.models import User
+from apps.users.models import User, ProductionPartnerProfile
 from apps.spaces.models import Space, SpacePhoto
 from apps.campaigns.models import Campaign, CreativeAsset
 from apps.placements.models import AdPlacement
 from apps.jobs.models import PrintJob
+from apps.messages.models import Thread, Message
+from apps.core.models import SupportTicket, SLAEvent
 
 
 class Command(BaseCommand):
@@ -80,6 +82,22 @@ class Command(BaseCommand):
             users[u_data['role']] = user
             status_text = 'Created' if created else 'Updated'
             self.stdout.write(f"  [{status_text}] User: {user.email} ({user.role})")
+            
+            if user.role == 'production_partner':
+                ProductionPartnerProfile.objects.get_or_create(
+                    user=user,
+                    defaults={
+                        'location': 'San Francisco, CA',
+                        'rating': Decimal('4.8'),
+                        'lead_time': '3-5 Days',
+                        'price_tier': '$$',
+                        'specialties': ['Vinyl', 'Mesh', 'Installation'],
+                        'is_host_selectable': True,
+                        'is_platform_network': True,
+                        'production_lead_days': 5,
+                        'shipping_days': 3
+                    }
+                )
 
         owner = users['space-owner']
         production_partner = users['production_partner']
@@ -317,5 +335,65 @@ class Command(BaseCommand):
                 }
             )
             self.stdout.write(f"  [PrintJob] Job for {s1.name} assigned to {production_partner.company_name}")
+
+            self.stdout.write(f"  [PrintJob] Job for {s1.name} assigned to {production_partner.company_name}")
+
+            # 4. Create Demo Chat Thread
+            thread, t_created = Thread.objects.get_or_create(
+                subject=f"Campaign Discussion: {camp.name}",
+                thread_type='campaign_chat',
+                campaign=camp
+            )
+            if t_created:
+                thread.participants.add(advertiser, owner, production_partner)
+                
+                # Add some initial messages
+                Message.objects.create(
+                    thread=thread,
+                    sender=advertiser,
+                    body="Hi team! Very excited to get this campaign launched. Has the artwork been approved yet?",
+                    is_read=True
+                )
+                
+                Message.objects.create(
+                    thread=thread,
+                    sender=production_partner,
+                    body="Yes, the files look great. We are starting the print run tomorrow morning.",
+                    is_read=True
+                )
+
+                Message.objects.create(
+                    thread=thread,
+                    sender=owner,
+                    body="Perfect. The space is cleared and ready for installation this weekend.",
+                    is_read=False
+                )
+                
+            self.stdout.write(f"  [Thread] Created chat thread with {thread.messages.count()} messages")
+            self.stdout.write(f"  [Thread] Created chat thread with {thread.messages.count()} messages")
+
+        # 5. Create Demo Support Tickets & SLA Events
+        ticket, _ = SupportTicket.objects.get_or_create(
+            user=advertiser,
+            subject="Artwork upload failing on mobile",
+            defaults={
+                'status': 'open',
+                'priority': 'high',
+                'category': 'technical'
+            }
+        )
+        self.stdout.write(f"  [Ticket] Created support ticket: {ticket.subject}")
+
+        sla, _ = SLAEvent.objects.get_or_create(
+            related_entity_id=str(s1.id) if created_spaces else "demo",
+            entity_type='space',
+            event_type='downtime',
+            defaults={
+                'severity': 'critical',
+                'description': 'Digital billboard disconnected from network for > 4 hours',
+                'resolved': False
+            }
+        )
+        self.stdout.write(f"  [SLA Event] Created SLA Event: {sla.event_type}")
 
         self.stdout.write(self.style.SUCCESS('Successfully seeded demo database!'))

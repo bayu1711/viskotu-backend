@@ -86,3 +86,18 @@ class User(AbstractBaseUser, PermissionsMixin):
             recipient_list=[self.email],
             fail_silently=False,
         )
+
+class ProductionPartnerProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='production_partner_profile')
+    location = models.CharField(max_length=255, blank=True)
+    rating = models.DecimalField(max_digits=3, decimal_places=1, default=5.0)
+    lead_time = models.CharField(max_length=50, blank=True)
+    price_tier = models.CharField(max_length=10, default='$$')
+    specialties = models.JSONField(default=list, blank=True)
+    is_host_selectable = models.BooleanField(default=True)
+    is_platform_network = models.BooleanField(default=True)
+    production_lead_days = models.IntegerField(default=5)
+    shipping_days = models.IntegerField(default=3)
+
+    def __str__(self):
+        return f"{self.user.name}'s Production Profile"
