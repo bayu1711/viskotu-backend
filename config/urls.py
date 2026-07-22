@@ -31,7 +31,7 @@ urlpatterns = [
     path('api/v1/spaces/', include('apps.spaces.urls')),
     path('api/v1/campaigns/', include('apps.campaigns.urls')),
     path('api/v1/creative-assets/', include('apps.campaigns.asset_urls')),
-    path('api/v1/placements/', include('apps.placements.urls')),
+    path('api/v1/ad_placements/', include('apps.placements.urls')),
     path('api/v1/jobs/', include('apps.jobs.urls')),
     path('api/v1/messages/', include('apps.messages.urls')),
     path('api/v1/notifications/', include('apps.notifications.urls')),
