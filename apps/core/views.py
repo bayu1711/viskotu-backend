@@ -1,9 +1,11 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions, viewsets
-from .models import SiteSettings, SupportTicket, SLAEvent
-from .serializers import SiteSettingsSerializer, SupportTicketSerializer, SLAEventSerializer
-
+from .models import SiteSettings, SupportTicket, SLAEvent, Category, ItemType, SurfaceMaterial
+from .serializers import (
+    SiteSettingsSerializer, SupportTicketSerializer, SLAEventSerializer,
+    CategorySerializer, ItemTypeSerializer, SurfaceMaterialSerializer
+)
 
 class SiteSettingsView(APIView):
     """
@@ -67,3 +69,28 @@ class SLAEventViewSet(viewsets.ModelViewSet):
         if getattr(user, 'is_staff', False) or getattr(user, 'is_superuser', False) or getattr(user, 'role', None) == 'admin':
             return SLAEvent.objects.all()
         return SLAEvent.objects.none()
+
+
+class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Category.objects.filter(is_active=True)
+    serializer_class = CategorySerializer
+    permission_classes = [permissions.AllowAny]
+
+
+class ItemTypeViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = ItemType.objects.filter(is_active=True)
+    serializer_class = ItemTypeSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        category_id = self.request.query_params.get('category')
+        if category_id:
+            qs = qs.filter(category_id=category_id)
+        return qs
+
+
+class SurfaceMaterialViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = SurfaceMaterial.objects.filter(is_active=True)
+    serializer_class = SurfaceMaterialSerializer
+    permission_classes = [permissions.AllowAny]
