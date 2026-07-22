@@ -11,6 +11,8 @@ from apps.placements.models import AdPlacement
 from apps.jobs.models import PrintJob
 from apps.messages.models import Thread, Message
 from apps.core.models import SupportTicket, SLAEvent
+from apps.payments.models import Payment, Payout
+from apps.notifications.models import Notification
 
 
 class Command(BaseCommand):
@@ -395,5 +397,49 @@ class Command(BaseCommand):
             }
         )
         self.stdout.write(f"  [SLA Event] Created SLA Event: {sla.event_type}")
+
+        # 6. Create Demo Payments & Notifications
+        if 'ad_placement' in locals():
+            payment, _ = Payment.objects.get_or_create(
+                ad_placement=ad_placement,
+                payer=advertiser,
+                defaults={
+                    'amount': Decimal('1750.00'),
+                    'currency': 'USD',
+                    'status': 'succeeded',
+                    'description': 'Escrow funding for Q3 Summer Launch Surge'
+                }
+            )
+            self.stdout.write(f"  [Payment] Created payment: {payment.amount} USD")
+
+            payout, _ = Payout.objects.get_or_create(
+                recipient=owner,
+                ad_placement=ad_placement,
+                defaults={
+                    'amount': Decimal('1250.00'),
+                    'currency': 'USD',
+                    'status': 'pending',
+                    'estimated_arrival': timezone.now() + datetime.timedelta(days=14)
+                }
+            )
+            self.stdout.write(f"  [Payout] Created payout: {payout.amount} USD")
+            
+        notif1, _ = Notification.objects.get_or_create(
+            recipient=advertiser,
+            title='Campaign Approved',
+            defaults={
+                'body': 'Your campaign "Q3 Summer Launch Surge" has been approved and funded.',
+                'notification_type': 'campaign_update'
+            }
+        )
+        notif2, _ = Notification.objects.get_or_create(
+            recipient=production_partner,
+            title='New Print Job',
+            defaults={
+                'body': 'You have been assigned a new print job for Downtown Main St.',
+                'notification_type': 'job_assigned'
+            }
+        )
+        self.stdout.write(f"  [Notification] Created demo notifications")
 
         self.stdout.write(self.style.SUCCESS('Successfully seeded demo database!'))
