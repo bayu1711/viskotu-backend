@@ -19,4 +19,6 @@ urlpatterns = [
     path('password-reset/confirm/', views.PasswordResetConfirmView.as_view(), name='auth-password-reset-confirm'),
     path('verify-email/', views.VerifyEmailView.as_view(), name='auth-verify-email'),
     path('resend-verification/', views.ResendVerificationView.as_view(), name='auth-resend-verification'),
+    path('deactivate/', views.DeactivateAccountView.as_view(), name='auth-deactivate'),
+    path('delete/', views.DeleteAccountView.as_view(), name='auth-delete'),
 ]

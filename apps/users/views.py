@@ -208,4 +208,30 @@ class ManagedAccessViewSet(viewsets.ModelViewSet):
         qs = ManagedAccess.objects.filter(managed_user=request.user, status='active')
         serializer = self.get_serializer(qs, many=True)
         return Response(serializer.data)
+class DeactivateAccountView(APIView):
+    permission_classes = [IsAuthenticated]
 
+    def post(self, request):
+        user = request.user
+        user.is_active = False
+        user.save(update_fields=['is_active'])
+        
+        # Blacklist the current refresh token if provided
+        try:
+            refresh_token = request.data.get('refresh')
+            if refresh_token:
+                token = RefreshToken(refresh_token)
+                token.blacklist()
+        except Exception:
+            pass
+
+        return Response({'detail': 'Account deactivated successfully.'})
+
+
+class DeleteAccountView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request):
+        user = request.user
+        user.delete()
+        return Response({'detail': 'Account deleted successfully.'}, status=status.HTTP_204_NO_CONTENT)
