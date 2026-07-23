@@ -81,6 +81,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def send_verification_email(self, request=None):
         import random
+        import requests
         from django.utils import timezone
         
         # Generate 6 digit OTP
@@ -89,13 +90,26 @@ class User(AbstractBaseUser, PermissionsMixin):
         self.otp_created_at = timezone.now()
         self.save(update_fields=['otp_code', 'otp_created_at'])
 
-        send_mail(
-            subject="Verify your Viskotu email address",
-            message=f"Hi {self.name},\n\nYour email verification code is: {otp}\n\nThis code will expire in 15 minutes.\n\nThank you,\nViskotu Team",
-            from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@viskotu.com'),
-            recipient_list=[self.email],
-            fail_silently=False,
-        )
+        # Using Bird.com REST API directly since the SDK requires Python 3.10+
+        bird_api_key = "bk_eu1_5o6FSX3rscR420MTbm3BFm83ZCHVV"
+        url = "https://eu1.platform.bird.com/v1/email/messages"
+        
+        headers = {
+            "Authorization": f"Bearer {bird_api_key}",
+            "Content-Type": "application/json"
+        }
+        
+        payload = {
+            "from": "onboarding@messagebird.dev",
+            "to": [self.email],
+            "subject": "Verify your Viskotu email address",
+            "html": f"<p>Hi {self.name},</p><p>Your email verification code is: <strong>{otp}</strong></p><p>This code will expire in 15 minutes.</p><p>Thank you,<br/>Viskotu Team</p>"
+        }
+        
+        try:
+            requests.post(url, json=payload, headers=headers)
+        except Exception as e:
+            print(f"Failed to send email via Bird API: {e}")
 
 class ProductionPartnerProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='production_partner_profile')
