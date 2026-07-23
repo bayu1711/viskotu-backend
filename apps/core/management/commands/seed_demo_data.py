@@ -31,6 +31,17 @@ class Command(BaseCommand):
                 'company_name': 'Apex Brands Inc.',
                 'phone': '+1 (555) 010-1001',
                 'kyc_status': 'verified',
+                'onboarded_roles': ['advertiser'],
+            },
+            {
+                'email': 'new-advertiser@demo.com',
+                'first_name': 'New',
+                'last_name': 'Advertiser',
+                'role': 'advertiser',
+                'company_name': '',
+                'phone': '',
+                'kyc_status': 'unverified',
+                'onboarded_roles': [],
             },
             {
                 'email': 'owner@demo.com',
@@ -40,6 +51,7 @@ class Command(BaseCommand):
                 'company_name': 'Urban Spaces LLC',
                 'phone': '+1 (555) 010-2002',
                 'kyc_status': 'verified',
+                'onboarded_roles': ['space-owner'],
             },
             {
                 'email': 'production-partner@demo.com',
@@ -49,6 +61,7 @@ class Command(BaseCommand):
                 'company_name': 'Prime Print & Install',
                 'phone': '+1 (555) 010-3003',
                 'kyc_status': 'verified',
+                'onboarded_roles': ['production-partner', 'production_partner'],
             },
             {
                 'email': 'admin@demo.com',
@@ -60,6 +73,7 @@ class Command(BaseCommand):
                 'kyc_status': 'verified',
                 'is_staff': True,
                 'is_superuser': True,
+                'onboarded_roles': ['admin'],
             },
         ]
 
@@ -77,11 +91,29 @@ class Command(BaseCommand):
                     'is_email_verified': True,
                     'is_staff': u_data.get('is_staff', False),
                     'is_superuser': u_data.get('is_superuser', False),
+                    'onboarded_roles': u_data.get('onboarded_roles', []),
                 }
             )
+            # Ensure fields are up to date even if not created
+            if not created:
+                user.first_name = u_data.get('first_name', '')
+                user.last_name = u_data.get('last_name', '')
+                user.role = u_data['role']
+                user.company_name = u_data.get('company_name', '')
+                user.phone = u_data.get('phone', '')
+                user.kyc_status = u_data.get('kyc_status', 'verified')
+                user.is_staff = u_data.get('is_staff', False)
+                user.is_superuser = u_data.get('is_superuser', False)
+                user.onboarded_roles = u_data.get('onboarded_roles', [])
             user.set_password('password123')
             user.save()
-            users[u_data['role']] = user
+            
+            # Map main users for relationships
+            if u_data['email'] == 'advertiser@demo.com':
+                users[u_data['role']] = user
+            elif u_data['role'] not in users:
+                users[u_data['role']] = user
+                
             status_text = 'Created' if created else 'Updated'
             self.stdout.write(f"  [{status_text}] User: {user.email} ({user.role})")
             

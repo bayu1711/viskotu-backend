@@ -59,6 +59,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         choices=[('unverified', 'Unverified'), ('pending', 'Pending'), ('verified', 'Verified'), ('rejected', 'Rejected')],
         default='unverified'
     )
+    onboarded_roles = models.JSONField(default=list, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
