@@ -126,3 +126,20 @@ class ProductionPartnerProfile(models.Model):
 
     def __str__(self):
         return f"{self.user.name}'s Production Profile"
+
+class ManagedAccess(models.Model):
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='granted_access')
+    managed_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='managed_by', null=True, blank=True)
+    invited_email = models.EmailField(blank=True)
+    permissions = models.JSONField(default=list)
+    status = models.CharField(max_length=20, choices=[('pending', 'Pending'), ('active', 'Active')], default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'managed_access'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.owner.email} -> {self.managed_user.email if self.managed_user else self.invited_email}"
+

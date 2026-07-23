@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
-from .models import ProductionPartnerProfile
+from .models import ProductionPartnerProfile, ManagedAccess
 
 User = get_user_model()
 
@@ -66,3 +66,34 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
 class VerifyEmailSerializer(serializers.Serializer):
     email = serializers.EmailField()
     otp = serializers.CharField(max_length=6)
+
+class ManagedAccessSerializer(serializers.ModelSerializer):
+    name = serializers.SerializerMethodField()
+    email = serializers.SerializerMethodField()
+    owner_name = serializers.SerializerMethodField()
+    owner_email = serializers.SerializerMethodField()
+    owner_role = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ManagedAccess
+        fields = ['id', 'owner', 'managed_user', 'invited_email', 'permissions', 'status', 'created_at', 'name', 'email', 'owner_name', 'owner_email', 'owner_role']
+        read_only_fields = ['id', 'owner', 'status', 'created_at']
+
+    def get_name(self, obj):
+        if obj.managed_user:
+            return obj.managed_user.name
+        return ''
+
+    def get_email(self, obj):
+        if obj.managed_user:
+            return obj.managed_user.email
+        return obj.invited_email
+
+    def get_owner_name(self, obj):
+        return obj.owner.name
+
+    def get_owner_email(self, obj):
+        return obj.owner.email
+
+    def get_owner_role(self, obj):
+        return obj.owner.role

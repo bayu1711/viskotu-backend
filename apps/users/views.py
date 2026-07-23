@@ -185,3 +185,27 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAdminUser]
+
+from rest_framework.decorators import action
+from .models import ManagedAccess
+from .serializers import ManagedAccessSerializer
+
+class ManagedAccessViewSet(viewsets.ModelViewSet):
+    serializer_class = ManagedAccessSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return ManagedAccess.objects.filter(owner=self.request.user)
+
+    def perform_create(self, serializer):
+        email = serializer.validated_data.get('invited_email')
+        managed_user = User.objects.filter(email=email).first()
+        status = 'active' if managed_user else 'pending'
+        serializer.save(owner=self.request.user, managed_user=managed_user, status=status)
+
+    @action(detail=False, methods=['get'])
+    def accounts_i_manage(self, request):
+        qs = ManagedAccess.objects.filter(managed_user=request.user, status='active')
+        serializer = self.get_serializer(qs, many=True)
+        return Response(serializer.data)
+

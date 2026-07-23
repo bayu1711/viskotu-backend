@@ -5,6 +5,7 @@ from . import views
 
 router = DefaultRouter()
 router.register(r'users', views.UserViewSet, basename='user')
+router.register(r'managed-access', views.ManagedAccessViewSet, basename='managed-access')
 
 urlpatterns = [
     path('', include(router.urls)),
