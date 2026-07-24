@@ -179,3 +179,7 @@ EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
 EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default=EMAIL_HOST_USER)
+
+# ─── Paddle Checkout ──────────────────────────────────────────────────────
+PADDLE_API_KEY = config('PADDLE_API_KEY', default='')
+PADDLE_PRODUCT_ID = config('PADDLE_PRODUCT_ID', default='')

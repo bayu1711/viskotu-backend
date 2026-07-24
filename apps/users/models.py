@@ -6,6 +6,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.db import models
 import uuid
+import requests
 
 
 class UserManager(BaseUserManager):
@@ -83,7 +84,6 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def send_verification_email(self, request=None):
         import random
-        import requests
         from django.utils import timezone
         
         # Generate 6 digit OTP

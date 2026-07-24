@@ -4,6 +4,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.core import mail
+from unittest.mock import patch
 from rest_framework.test import APITestCase
 from rest_framework import status
 
@@ -11,7 +12,8 @@ User = get_user_model()
 
 
 class UserSignupTests(APITestCase):
-    def test_signup_success(self):
+    @patch('apps.users.models.requests.post')
+    def test_signup_success(self, mock_post):
         url = reverse('auth-signup')
         data = {
             'email': 'testuser@example.com',
@@ -28,10 +30,10 @@ class UserSignupTests(APITestCase):
         self.assertIn('user', response.data)
         self.assertEqual(response.data['user']['email'], 'testuser@example.com')
 
-        # Check email was sent to outbox
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertIn('Verify your Viskotu email address', mail.outbox[0].subject)
-        self.assertIn('testuser@example.com', mail.outbox[0].to)
+        # Check email was sent via Bird API (requests.post)
+        self.assertTrue(mock_post.called)
+        call_args = mock_post.call_args[1]
+        self.assertEqual(call_args['json']['to'][0], 'testuser@example.com')
 
     def test_signup_password_mismatch(self):
         url = reverse('auth-signup')
@@ -79,32 +81,40 @@ class EmailVerificationTests(APITestCase):
 
     def test_verify_email_success(self):
         self.assertFalse(self.user.is_email_verified)
-        token = default_token_generator.make_token(self.user)
-        uid = urlsafe_base64_encode(force_bytes(self.user.pk))
+        self.user.otp_code = '123456'
+        from django.utils import timezone
+        self.user.otp_created_at = timezone.now()
+        self.user.save()
 
         url = reverse('auth-verify-email')
-        data = {'uid': uid, 'token': token}
+        data = {'email': self.user.email, 'otp': '123456'}
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.user.refresh_from_db()
         self.assertTrue(self.user.is_email_verified)
 
     def test_verify_email_invalid_token(self):
-        uid = urlsafe_base64_encode(force_bytes(self.user.pk))
+        self.user.otp_code = '123456'
+        from django.utils import timezone
+        self.user.otp_created_at = timezone.now()
+        self.user.save()
+
         url = reverse('auth-verify-email')
-        data = {'uid': uid, 'token': 'invalid-token-string'}
+        data = {'email': self.user.email, 'otp': '000000'}
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.user.refresh_from_db()
         self.assertFalse(self.user.is_email_verified)
 
-    def test_resend_verification_email(self):
+    @patch('apps.users.models.requests.post')
+    def test_resend_verification_email(self, mock_post):
         self.client.force_authenticate(user=self.user)
         url = reverse('auth-resend-verification')
         response = self.client.post(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertIn('Verify your Viskotu email address', mail.outbox[0].subject)
+        self.assertTrue(mock_post.called)
+        call_args = mock_post.call_args[1]
+        self.assertEqual(call_args['json']['to'][0], 'unverified@example.com')
 
 
 class PasswordResetTests(APITestCase):
