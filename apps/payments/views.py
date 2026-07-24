@@ -3,7 +3,6 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from .models import Payment, Payout
 from .serializers import PaymentSerializer, PayoutSerializer
-import uuid
 
 class PaymentViewSet(viewsets.ModelViewSet):
     serializer_class = PaymentSerializer
@@ -15,13 +14,26 @@ class PaymentViewSet(viewsets.ModelViewSet):
         return Payment.objects.filter(payer=self.request.user)
 
     def perform_create(self, serializer):
-        # Mocking Stripe integration by immediately marking as succeeded
         serializer.save(
             payer=self.request.user, 
-            status='succeeded',
-            stripe_payment_intent_id=f"pi_{uuid.uuid4().hex[:20]}",
-            stripe_charge_id=f"ch_{uuid.uuid4().hex[:20]}"
+            status='pending'
         )
+
+    @action(detail=False, methods=['post'], url_path='paddle-webhook', permission_classes=[permissions.AllowAny])
+    def paddle_webhook(self, request):
+        if request.data.get('alert_name') == 'payment_succeeded':
+            passthrough = request.data.get('passthrough')
+            if passthrough:
+                try:
+                    payment = Payment.objects.get(id=passthrough)
+                    payment.status = 'succeeded'
+                    transaction_id = request.data.get('transaction_id') or request.data.get('p_order_id')
+                    if transaction_id:
+                        payment.paddle_transaction_id = str(transaction_id)
+                    payment.save()
+                except Payment.DoesNotExist:
+                    pass
+        return Response({'status': 'ok'})
 
 class PayoutViewSet(viewsets.ModelViewSet):
     serializer_class = PayoutSerializer
@@ -33,9 +45,7 @@ class PayoutViewSet(viewsets.ModelViewSet):
         return Payout.objects.filter(recipient=self.request.user)
 
     def perform_create(self, serializer):
-        # Mocking Stripe payout
         serializer.save(
             recipient=self.request.user, 
-            status='paid',
-            stripe_payout_id=f"po_{uuid.uuid4().hex[:20]}"
+            status='pending'
         )

@@ -60,6 +60,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         default='unverified'
     )
     onboarded_roles = models.JSONField(default=list, blank=True)
+    reliability_score = models.IntegerField(default=100)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

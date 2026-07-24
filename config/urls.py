@@ -37,6 +37,7 @@ urlpatterns = [
     path('api/v1/notifications/', include('apps.notifications.urls')),
     path('api/v1/payments/', include('apps.payments.urls')),
     path('api/v1/taxonomy/', include('apps.core.taxonomy_urls')),
+    path('api/v1/analytics/', include('apps.core.analytics_urls')),
     path('api/v1/admin/reports/', AdminReportsDummyView.as_view(), name='admin-reports-dummy'),
 ]
 

@@ -182,6 +182,11 @@ class ResendVerificationView(APIView):
         return Response({'detail': 'Verification email sent.'})
 
 class UserViewSet(viewsets.ModelViewSet):
+    def get_serializer_class(self):
+        if self.request.user.is_staff and self.action == 'list':
+            from .serializers import AdminUserSerializer
+            return AdminUserSerializer
+        return UserSerializer
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAdminUser]

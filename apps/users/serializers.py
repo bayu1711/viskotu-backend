@@ -23,8 +23,9 @@ class UserSerializer(serializers.ModelSerializer):
             'role', 'is_email_verified', 'phone', 'avatar',
             'company_name', 'bio', 'kyc_status', 'created_at',
             'production_partner_profile', 'onboarded_roles',
+            'reliability_score',
         ]
-        read_only_fields = ['id', 'email', 'is_email_verified', 'created_at']
+        read_only_fields = ['id', 'email', 'is_email_verified', 'created_at', 'reliability_score']
 
 
 class SignupSerializer(serializers.ModelSerializer):
@@ -97,3 +98,26 @@ class ManagedAccessSerializer(serializers.ModelSerializer):
 
     def get_owner_role(self, obj):
         return obj.owner.role
+
+
+class AdminUserSerializer(UserSerializer):
+    revenue = serializers.SerializerMethodField()
+    assets = serializers.SerializerMethodField()
+
+    class Meta(UserSerializer.Meta):
+        fields = UserSerializer.Meta.fields + ['revenue', 'assets']
+
+    def get_revenue(self, obj):
+        from apps.payments.models import Payment, Payout
+        from django.db.models import Sum
+        if obj.role == 'advertiser':
+            return float(Payment.objects.filter(payer=obj, status='succeeded').aggregate(total=Sum('amount'))['total'] or 0)
+        else:
+            return float(Payout.objects.filter(recipient=obj, status='paid').aggregate(total=Sum('amount'))['total'] or 0)
+
+    def get_assets(self, obj):
+        from apps.spaces.models import Space
+        from apps.campaigns.models import Campaign
+        if obj.role == 'advertiser':
+            return Campaign.objects.filter(advertiser=obj).count()
+        return Space.objects.filter(owner=obj).count()

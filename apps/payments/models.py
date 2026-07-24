@@ -22,9 +22,9 @@ class Payment(models.Model):
     currency = models.CharField(max_length=3, default='USD')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
 
-    # Stripe fields
-    stripe_payment_intent_id = models.CharField(max_length=200, blank=True, unique=True, null=True)
-    stripe_charge_id = models.CharField(max_length=200, blank=True)
+    # Paddle fields
+    paddle_transaction_id = models.CharField(max_length=200, blank=True, unique=True, null=True)
+    paddle_subscription_id = models.CharField(max_length=200, blank=True)
 
     description = models.CharField(max_length=300, blank=True)
     metadata = models.JSONField(default=dict)
@@ -55,7 +55,7 @@ class Payout(models.Model):
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     currency = models.CharField(max_length=3, default='USD')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
-    stripe_payout_id = models.CharField(max_length=200, blank=True)
+    paddle_payout_id = models.CharField(max_length=200, blank=True)
 
     estimated_arrival = models.DateTimeField(null=True, blank=True)
     paid_at = models.DateTimeField(null=True, blank=True)
