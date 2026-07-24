@@ -56,3 +56,9 @@ class PrintJobViewSet(viewsets.ModelViewSet):
         else:
             job.save(update_fields=['status', 'updated_at'])
         return Response(PrintJobSerializer(job, context={'request': request}).data)
+
+    @action(detail=False, methods=['post'])
+    def check_expiries(self, request):
+        from .utils.accept_window import check_accept_window_expiry
+        processed = check_accept_window_expiry()
+        return Response({'processed': processed, 'message': f'Checked and processed {processed} jobs.'})
