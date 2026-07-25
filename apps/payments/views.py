@@ -4,10 +4,13 @@ from rest_framework.decorators import action
 from django.conf import settings
 import requests
 import csv
+import os
+import hashlib
 from django.http import HttpResponse
 from django.db.models import Sum
 from .models import Payment, Payout
 from .serializers import PaymentSerializer, PayoutSerializer
+from apps.campaigns.models import Campaign # Assuming Campaign is here, if needed for custom_1, or maybe we just pass custom_1 from frontend?
 
 class PaymentViewSet(viewsets.ModelViewSet):
     serializer_class = PaymentSerializer
@@ -27,9 +30,55 @@ class PaymentViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['post'], url_path='create-transaction')
     def create_transaction(self, request):
         total_cost = request.data.get('total_cost')
+        gateway = request.data.get('gateway', 'paddle')
+        campaign_id = request.data.get('campaign_id', '')
+        
         if not total_cost:
             return Response({'error': 'total_cost is required'}, status=status.HTTP_400_BAD_REQUEST)
         
+        if gateway == 'payhere':
+            import uuid
+            order_id = str(uuid.uuid4())
+            amount_lkr = float(total_cost) * 300
+            amount_formatted = "{:.2f}".format(amount_lkr)
+            currency = 'LKR'
+            
+            merchant_id = os.environ.get('PAYHERE_MERCHANT_ID', getattr(settings, 'PAYHERE_MERCHANT_ID', ''))
+            merchant_secret = os.environ.get('PAYHERE_SECRET', getattr(settings, 'PAYHERE_SECRET', ''))
+            
+            # Generate the PayHere MD5 hash
+            # md5sig = md5( merchant_id + order_id + amount_formatted_to_2_decimals + currency + md5(merchant_secret).upper() ).upper()
+            
+            hashed_secret = hashlib.md5(merchant_secret.encode('utf-8')).hexdigest().upper()
+            hash_string = f"{merchant_id}{order_id}{amount_formatted}{currency}{hashed_secret}"
+            md5sig = hashlib.md5(hash_string.encode('utf-8')).hexdigest().upper()
+            
+            payhere_payload = {
+                'sandbox': True,
+                'merchant_id': merchant_id,
+                'return_url': request.build_absolute_uri('/') + 'return',
+                'cancel_url': request.build_absolute_uri('/') + 'cancel',
+                'notify_url': request.build_absolute_uri('/api/payments/payhere-webhook/'),
+                'order_id': order_id,
+                'items': 'Custom Ad Campaign',
+                'currency': currency,
+                'amount': amount_formatted,
+                'hash': md5sig,
+                'custom_1': campaign_id,
+                'first_name': getattr(request.user, 'first_name', ''),
+                'last_name': getattr(request.user, 'last_name', ''),
+                'email': getattr(request.user, 'email', ''),
+                'phone': getattr(request.user, 'phone', ''),
+                'address': '',
+                'city': '',
+                'country': 'Sri Lanka'
+            }
+            return Response({
+                'gateway': 'payhere',
+                'payhere_payload': payhere_payload
+            })
+            
+        # Paddle logic
         headers = {
             'Authorization': f'Bearer {settings.PADDLE_API_KEY}',
             'Content-Type': 'application/json'
@@ -45,16 +94,52 @@ class PaymentViewSet(viewsets.ModelViewSet):
                     }
                 }, 
                 "quantity": 1
-            }]
+            }],
+            'custom_data': {'campaign_id': campaign_id}
         }
         
         try:
             response = requests.post('https://api.paddle.com/transactions', headers=headers, json=payload)
             response.raise_for_status()
             data = response.json().get('data', {})
-            return Response({'transaction_id': data.get('id')})
+            return Response({'gateway': 'paddle', 'transaction_id': data.get('id')})
         except requests.RequestException as e:
             return Response({'error': 'Failed to create transaction', 'details': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['post'], url_path='payhere-webhook', permission_classes=[permissions.AllowAny])
+    def payhere_webhook(self, request):
+        merchant_id = request.data.get('merchant_id')
+        order_id = request.data.get('order_id')
+        payhere_amount = request.data.get('payhere_amount')
+        payhere_currency = request.data.get('payhere_currency')
+        status_code = request.data.get('status_code')
+        md5sig = request.data.get('md5sig')
+        custom_1 = request.data.get('custom_1')
+        
+        my_merchant_id = os.environ.get('PAYHERE_MERCHANT_ID', getattr(settings, 'PAYHERE_MERCHANT_ID', ''))
+        merchant_secret = os.environ.get('PAYHERE_SECRET', getattr(settings, 'PAYHERE_SECRET', ''))
+        
+        hashed_secret = hashlib.md5(merchant_secret.encode('utf-8')).hexdigest().upper()
+        local_hash_string = f"{my_merchant_id}{order_id}{payhere_amount}{payhere_currency}{status_code}{hashed_secret}"
+        local_md5sig = hashlib.md5(local_hash_string.encode('utf-8')).hexdigest().upper()
+        
+        if local_md5sig == md5sig:
+            if status_code == '2':
+                # Payment success
+                if custom_1:
+                    try:
+                        from apps.campaigns.models import Campaign
+                        campaign = Campaign.objects.get(id=custom_1)
+                        campaign.status = 'funded'
+                        campaign.save()
+                    except (ImportError, Exception):
+                        pass
+                
+                return Response({'status': 'ok'}, status=status.HTTP_200_OK)
+            else:
+                return Response({'status': 'failed or pending'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'error': 'Invalid signature'}, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['post'], url_path='paddle-webhook', permission_classes=[permissions.AllowAny])
     def paddle_webhook(self, request):
