@@ -12,6 +12,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
 from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework.decorators import action
 import boto3
 
 from .serializers import (
@@ -221,7 +222,6 @@ class UserViewSet(viewsets.ModelViewSet):
         
         return Response({'status': user.kyc_status})
 
-from rest_framework.decorators import action
 from .models import ManagedAccess
 from .serializers import ManagedAccessSerializer
 

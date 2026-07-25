@@ -20,7 +20,7 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             'id', 'email', 'first_name', 'last_name', 'name',
-            'role', 'is_email_verified', 'phone', 'avatar',
+            'role', 'country', 'preferred_currency', 'is_email_verified', 'phone', 'avatar',
             'company_name', 'bio', 'kyc_status', 'created_at',
             'production_partner_profile', 'onboarded_roles',
             'reliability_score',
@@ -31,10 +31,11 @@ class UserSerializer(serializers.ModelSerializer):
 class SignupSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, validators=[validate_password])
     confirm_password = serializers.CharField(write_only=True)
+    country = serializers.CharField(max_length=2, required=False)
 
     class Meta:
         model = User
-        fields = ['email', 'password', 'confirm_password', 'first_name', 'last_name', 'role']
+        fields = ['email', 'password', 'confirm_password', 'first_name', 'last_name', 'role', 'country']
 
     def validate(self, attrs):
         if attrs['password'] != attrs.pop('confirm_password'):
@@ -42,6 +43,12 @@ class SignupSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
+        country = validated_data.get('country')
+        currency_map = {'LK': 'LKR', 'US': 'USD', 'GB': 'GBP', 'EU': 'EUR'}
+        if country:
+            validated_data['preferred_currency'] = currency_map.get(country.upper(), 'USD')
+        else:
+            validated_data['preferred_currency'] = 'USD'
         return User.objects.create_user(**validated_data)
 
 
