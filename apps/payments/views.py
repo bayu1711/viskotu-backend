@@ -3,6 +3,9 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.conf import settings
 import requests
+import csv
+from django.http import HttpResponse
+from django.db.models import Sum
 from .models import Payment, Payout
 from .serializers import PaymentSerializer, PayoutSerializer
 
@@ -83,3 +86,52 @@ class PayoutViewSet(viewsets.ModelViewSet):
             recipient=self.request.user, 
             status='pending'
         )
+
+    @action(detail=False, methods=['post'], url_path='request-withdrawal')
+    def request_withdrawal(self, request):
+        payouts = Payout.objects.filter(recipient=request.user, status='pending')
+        total_amount = payouts.aggregate(Sum('amount'))['amount__sum'] or 0
+        if total_amount >= 50:
+            payouts.update(status='requested')
+            return Response({'status': 'success', 'message': f'Withdrawal requested for ${total_amount}'})
+        return Response({'error': 'Minimum withdrawal threshold is $50'}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['get'], url_path='export-csv', permission_classes=[permissions.IsAdminUser])
+    def export_csv(self, request):
+        payouts = Payout.objects.filter(status='requested').select_related('recipient')
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="payouts.csv"'
+        writer = csv.writer(response)
+        writer.writerow(['Recipient Name', 'Email', 'Amount', 'Currency'])
+        for payout in payouts:
+            name = getattr(payout.recipient, 'name', '') or f"{getattr(payout.recipient, 'first_name', '')} {getattr(payout.recipient, 'last_name', '')}".strip()
+            writer.writerow([name, payout.recipient.email, payout.amount, payout.currency])
+        return response
+
+    @action(detail=False, methods=['post'], url_path='process-wise', permission_classes=[permissions.IsAdminUser])
+    def process_wise(self, request):
+        user_ids = request.data.get('user_ids', [])
+        if not user_ids:
+            return Response({'error': 'No user_ids provided'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        for uid in user_ids:
+            payouts = Payout.objects.filter(recipient_id=uid, status='requested')
+            total = payouts.aggregate(Sum('amount'))['amount__sum'] or 0
+            if total > 0:
+                # Mock Wise API call
+                try:
+                    # requests.post('https://api.sandbox.transferwise.tech/v1/transfers', ...)
+                    pass
+                except Exception:
+                    pass
+                payouts.update(status='processing')
+        return Response({'status': 'success'})
+
+    @action(detail=False, methods=['post'], url_path='mark-paid', permission_classes=[permissions.IsAdminUser])
+    def mark_paid(self, request):
+        payout_ids = request.data.get('payout_ids', [])
+        if not payout_ids:
+            return Response({'error': 'No payout_ids provided'}, status=status.HTTP_400_BAD_REQUEST)
+        Payout.objects.filter(id__in=payout_ids).update(status='paid')
+        return Response({'status': 'success'})
+

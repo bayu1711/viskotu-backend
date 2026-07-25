@@ -40,6 +40,8 @@ class Payment(models.Model):
 class Payout(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Pending'),
+        ('requested', 'Requested'),
+        ('processing', 'Processing'),
         ('in_transit', 'In Transit'),
         ('paid', 'Paid'),
         ('failed', 'Failed'),

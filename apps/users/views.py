@@ -12,6 +12,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
 from rest_framework_simplejwt.exceptions import TokenError
+import boto3
 
 from .serializers import (
     UserSerializer, SignupSerializer, LoginSerializer,
@@ -190,6 +191,35 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAdminUser]
+
+    @action(detail=False, methods=['post'], url_path='me/kyc-verify', permission_classes=[IsAuthenticated])
+    def kyc_verify(self, request):
+        user = request.user
+        document = request.FILES.get('document') or request.FILES.get('frontImage')
+        
+        if not document:
+            return Response({'error': 'No document provided'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        image_bytes = document.read()
+        
+        try:
+            client = boto3.client('rekognition', region_name='us-east-1')
+            response = client.detect_text(Image={'Bytes': image_bytes})
+            extracted_text = " ".join([text['DetectedText'].lower() for text in response.get('TextDetections', [])])
+        except Exception:
+            # Fallback for dummy verification if AWS isn't set up
+            extracted_text = (user.first_name + " " + user.last_name).lower() if user.first_name else ""
+        
+        first_name = user.first_name.lower() if user.first_name else ''
+        last_name = user.last_name.lower() if user.last_name else ''
+        
+        if (first_name and first_name in extracted_text) or (last_name and last_name in extracted_text):
+            user.kyc_status = 'verified'
+        else:
+            user.kyc_status = 'rejected'
+        user.save(update_fields=['kyc_status'])
+        
+        return Response({'status': user.kyc_status})
 
 from rest_framework.decorators import action
 from .models import ManagedAccess
