@@ -1,0 +1,8 @@
+{% extends 'emails/base.html' %}
+
+{% block content %}
+    <h2>Payout Requested</h2>
+    <p>Hi {{ owner.username|default:"there" }},</p>
+    <p>We have received your payout request for <strong>{{ payout.amount }}</strong>.</p>
+    <p>We are currently processing it and will notify you once the transfer is complete.</p>
+{% endblock %}

@@ -22,6 +22,7 @@ class AdPlacementViewSet(viewsets.ModelViewSet):
 
     def perform_update(self, serializer):
         from apps.jobs.models import PrintJob
+        from apps.core.services.email_service import send_job_assigned_email
         from django.contrib.auth import get_user_model
         User = get_user_model()
         
@@ -29,7 +30,7 @@ class AdPlacementViewSet(viewsets.ModelViewSet):
         if instance.status in ['confirmed', 'paid'] and not hasattr(instance, 'print_job'):
             # Find a production_partner (e.g. first available)
             production_partner = User.objects.filter(role='production-partner').first()
-            PrintJob.objects.create(
+            job = PrintJob.objects.create(
                 ad_placement=instance,
                 production_partner=production_partner,
                 status='JOB_PENDING_ACCEPT',
@@ -37,4 +38,6 @@ class AdPlacementViewSet(viewsets.ModelViewSet):
                 size='24x36',
                 quantity=1
             )
+            if production_partner:
+                send_job_assigned_email(job, production_partner)
 

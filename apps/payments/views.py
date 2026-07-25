@@ -11,7 +11,7 @@ from django.db.models import Sum
 from .models import Payment, Payout
 from .serializers import PaymentSerializer, PayoutSerializer
 from apps.campaigns.models import Campaign # Assuming Campaign is here, if needed for custom_1, or maybe we just pass custom_1 from frontend?
-
+from apps.core.services.email_service import send_campaign_funded_email, send_payout_requested_email
 class PaymentViewSet(viewsets.ModelViewSet):
     serializer_class = PaymentSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -132,6 +132,10 @@ class PaymentViewSet(viewsets.ModelViewSet):
                         campaign = Campaign.objects.get(id=custom_1)
                         campaign.status = 'funded'
                         campaign.save()
+                        # Send email
+                        advertiser = getattr(campaign, 'advertiser', getattr(campaign, 'user', getattr(campaign, 'owner', None)))
+                        if advertiser:
+                            send_campaign_funded_email(campaign, advertiser)
                     except (ImportError, Exception):
                         pass
                 
@@ -178,6 +182,10 @@ class PayoutViewSet(viewsets.ModelViewSet):
         total_amount = payouts.aggregate(Sum('amount'))['amount__sum'] or 0
         if total_amount >= 50:
             payouts.update(status='requested')
+            
+            for payout in payouts:
+                send_payout_requested_email(payout, request.user)
+                
             return Response({'status': 'success', 'message': f'Withdrawal requested for ${total_amount}'})
         return Response({'error': 'Minimum withdrawal threshold is $50'}, status=status.HTTP_400_BAD_REQUEST)
 

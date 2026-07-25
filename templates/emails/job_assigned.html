@@ -1,0 +1,11 @@
+{% extends 'emails/base.html' %}
+
+{% block content %}
+    <h2>New Print Job Assigned</h2>
+    <p>Hi {{ printer.username|default:"there" }},</p>
+    <p>You have been assigned a new print job.</p>
+    {% if job.title %}
+    <p><strong>Job Title:</strong> {{ job.title }}</p>
+    {% endif %}
+    <p>Please log in to your dashboard to view the details and start working on it.</p>
+{% endblock %}

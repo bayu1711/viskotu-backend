@@ -1,0 +1,8 @@
+{% extends 'emails/base.html' %}
+
+{% block content %}
+    <h2>Campaign Funded!</h2>
+    <p>Hi {{ advertiser.username|default:"there" }},</p>
+    <p>Great news! Your campaign "<strong>{{ campaign.title }}</strong>" has been successfully funded.</p>
+    <p>You can track the progress of your campaign in your dashboard.</p>
+{% endblock %}

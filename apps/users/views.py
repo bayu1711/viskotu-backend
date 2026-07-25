@@ -4,6 +4,7 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.core.mail import send_mail
 from django.conf import settings
+from apps.core.services.email_service import send_welcome_email
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework import viewsets
@@ -118,13 +119,7 @@ class PasswordResetRequestView(APIView):
             token = default_token_generator.make_token(user)
             uid = urlsafe_base64_encode(force_bytes(user.pk))
             reset_url = f"http://localhost:3000/reset-password?uid={uid}&token={token}"
-            send_mail(
-                subject="Reset your Viskotu password",
-                message=f"Hi {user.name},\n\nPlease click the link below to reset your password:\n\n{reset_url}\n\nIf you didn't request a password reset, you can safely ignore this email.",
-                from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@viskotu.com'),
-                recipient_list=[user.email],
-                fail_silently=False,
-            )
+            send_welcome_email(user, reset_url=reset_url)
         return Response({'detail': 'If that email exists, a reset link has been sent.'})
 
 
