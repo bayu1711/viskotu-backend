@@ -32,6 +32,7 @@ THIRD_PARTY_APPS = [
     'corsheaders',
     'drf_spectacular',
     'django_filters',
+    'storages',
 ]
 
 LOCAL_APPS = [
@@ -195,3 +196,26 @@ DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@viskotu.com')
 # ─── Paddle Checkout ──────────────────────────────────────────────────────
 PADDLE_API_KEY = config('PADDLE_API_KEY', default='')
 PADDLE_PRODUCT_ID = config('PADDLE_PRODUCT_ID', default='')
+
+# ─── AWS S3 Media Storage ──────────────────────────────────────────────────
+# If AWS_ACCESS_KEY_ID is provided in the environment, use S3 for media.
+# Otherwise, fall back to local disk storage (useful for local dev without keys).
+if config('AWS_ACCESS_KEY_ID', default=None):
+    AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')
+    AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
+    AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME')
+    AWS_S3_REGION_NAME = config('AWS_DEFAULT_REGION', default='us-east-1')
+    
+    # Use Amazon S3 for storage
+    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    
+    # Generate URLs pointing to the S3 bucket
+    AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
+    MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/'
+    
+    # Optional but recommended settings
+    AWS_S3_OBJECT_PARAMETERS = {
+        'CacheControl': 'max-age=86400',
+    }
+    AWS_DEFAULT_ACL = 'public-read'
+
