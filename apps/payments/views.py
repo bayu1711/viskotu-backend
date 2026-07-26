@@ -42,23 +42,32 @@ class PaymentViewSet(viewsets.ModelViewSet):
         
         if gateway == 'payhere':
             import uuid
+            merchant_id = os.environ.get('PAYHERE_MERCHANT_ID', getattr(settings, 'PAYHERE_MERCHANT_ID', ''))
+            merchant_secret = os.environ.get('PAYHERE_SECRET', getattr(settings, 'PAYHERE_SECRET', ''))
+
+            # If no PayHere credentials configured, return coming-soon signal
+            if not merchant_id or not merchant_secret:
+                return Response({
+                    'gateway': 'payhere',
+                    'coming_soon': True,
+                    'message': 'Local bank transfer is coming soon. Please use Credit Card for now.'
+                })
+
             order_id = str(uuid.uuid4())
             amount_lkr = float(total_cost) * 300
             amount_formatted = "{:.2f}".format(amount_lkr)
             currency = 'LKR'
-            
-            merchant_id = os.environ.get('PAYHERE_MERCHANT_ID', getattr(settings, 'PAYHERE_MERCHANT_ID', ''))
-            merchant_secret = os.environ.get('PAYHERE_SECRET', getattr(settings, 'PAYHERE_SECRET', ''))
-            
+
+            # Sandbox mode driven by DEBUG setting (True in dev, False in production)
+            is_sandbox = getattr(settings, 'DEBUG', True)
+
             # Generate the PayHere MD5 hash
-            # md5sig = md5( merchant_id + order_id + amount_formatted_to_2_decimals + currency + md5(merchant_secret).upper() ).upper()
-            
             hashed_secret = hashlib.md5(merchant_secret.encode('utf-8')).hexdigest().upper()
             hash_string = f"{merchant_id}{order_id}{amount_formatted}{currency}{hashed_secret}"
             md5sig = hashlib.md5(hash_string.encode('utf-8')).hexdigest().upper()
-            
+
             payhere_payload = {
-                'sandbox': True,
+                'sandbox': is_sandbox,
                 'merchant_id': merchant_id,
                 'return_url': request.build_absolute_uri('/') + 'return',
                 'cancel_url': request.build_absolute_uri('/') + 'cancel',
