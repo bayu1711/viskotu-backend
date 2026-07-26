@@ -12,8 +12,7 @@ User = get_user_model()
 
 
 class UserSignupTests(APITestCase):
-    @patch('apps.users.models.requests.post')
-    def test_signup_success(self, mock_post):
+    def test_signup_success(self):
         url = reverse('auth-signup')
         data = {
             'email': 'testuser@example.com',
@@ -30,10 +29,9 @@ class UserSignupTests(APITestCase):
         self.assertIn('user', response.data)
         self.assertEqual(response.data['user']['email'], 'testuser@example.com')
 
-        # Check email was sent via Bird API (requests.post)
-        self.assertTrue(mock_post.called)
-        call_args = mock_post.call_args[1]
-        self.assertEqual(call_args['json']['to'][0], 'testuser@example.com')
+        # Check email was sent via Django's send_mail
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to[0], 'testuser@example.com')
 
     def test_signup_password_mismatch(self):
         url = reverse('auth-signup')
@@ -106,15 +104,13 @@ class EmailVerificationTests(APITestCase):
         self.user.refresh_from_db()
         self.assertFalse(self.user.is_email_verified)
 
-    @patch('apps.users.models.requests.post')
-    def test_resend_verification_email(self, mock_post):
+    def test_resend_verification_email(self):
         self.client.force_authenticate(user=self.user)
         url = reverse('auth-resend-verification')
         response = self.client.post(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertTrue(mock_post.called)
-        call_args = mock_post.call_args[1]
-        self.assertEqual(call_args['json']['to'][0], 'unverified@example.com')
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to[0], 'unverified@example.com')
 
 
 class PasswordResetTests(APITestCase):
