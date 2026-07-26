@@ -131,7 +131,7 @@ class PasswordResetTests(APITestCase):
         response = self.client.post(request_url, {'email': 'resetuser@example.com'}, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(mail.outbox), 1)
-        self.assertIn('Reset your Viskotu password', mail.outbox[0].subject)
+        self.assertIn('Reset Your Viskotu Password', mail.outbox[0].subject)
 
         # 2. Confirm password reset using valid uid and token
         token = default_token_generator.make_token(self.user)

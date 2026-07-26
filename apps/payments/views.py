@@ -6,6 +6,10 @@ import requests
 import csv
 import os
 import hashlib
+import hmac
+import logging
+
+logger = logging.getLogger(__name__)
 from django.http import HttpResponse
 from django.db.models import Sum
 from .models import Payment, Payout
@@ -147,6 +151,26 @@ class PaymentViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post'], url_path='paddle-webhook', permission_classes=[permissions.AllowAny])
     def paddle_webhook(self, request):
+        raw_body = request.body.decode('utf-8')
+        secret = os.environ.get('PADDLE_WEBHOOK_SECRET', '')
+        
+        if secret:
+            signature_header = request.META.get('HTTP_PADDLE_SIGNATURE', '')
+            parts = dict(part.split('=') for part in signature_header.split(';') if '=' in part)
+            ts = parts.get('ts', '')
+            h1 = parts.get('h1', '')
+            
+            expected_signature = hmac.new(
+                secret.encode('utf-8'),
+                f'{ts}:{raw_body}'.encode('utf-8'),
+                hashlib.sha256
+            ).hexdigest()
+            
+            if h1 != expected_signature:
+                return Response({'error': 'Invalid signature'}, status=403)
+        else:
+            logger.warning('PADDLE_WEBHOOK_SECRET is not configured, skipping signature verification')
+
         if request.data.get('alert_name') == 'payment_succeeded':
             passthrough = request.data.get('passthrough')
             if passthrough:
