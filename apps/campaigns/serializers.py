@@ -29,6 +29,13 @@ class CreativeAssetSerializer(serializers.ModelSerializer):
         return None
 
 
+class AdminCreativeAssetSerializer(CreativeAssetSerializer):
+    advertiser = UserSerializer(read_only=True)
+
+    class Meta(CreativeAssetSerializer.Meta):
+        fields = CreativeAssetSerializer.Meta.fields + ['advertiser']
+
+
 class CampaignSerializer(serializers.ModelSerializer):
     advertiser = UserSerializer(read_only=True)
     assets = CreativeAssetSerializer(many=True, read_only=True)

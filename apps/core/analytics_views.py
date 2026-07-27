@@ -30,14 +30,22 @@ class DashboardAnalyticsView(APIView):
 
     def get_advertiser_stats(self, user):
         campaigns = Campaign.objects.filter(advertiser=user)
-        active_campaigns = campaigns.filter(status='ACTIVE').count()
+        active_campaigns = campaigns.filter(status='active').count()
         total_spent = Payment.objects.filter(payer=user, status='succeeded').aggregate(total=Sum('amount'))['total'] or 0
         total_placements = AdPlacement.objects.filter(campaign__advertiser=user).count()
+        total_impressions = campaigns.aggregate(total=Sum('impressions'))['total'] or 0
         
         return Response({
             "active_campaigns": active_campaigns,
             "total_spent": float(total_spent),
             "total_placements": total_placements,
+            "est_impressions": total_impressions,
+            "trends": {
+                "spent": {"value": 0, "direction": "up"},
+                "impressions": {"value": 0, "direction": "up"},
+                "campaigns": {"value": 0, "direction": "up"},
+                "placements": {"value": 0, "direction": "up"},
+            },
             "recent_activity": [] # Add recent activity if needed
         })
 

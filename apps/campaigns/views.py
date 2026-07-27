@@ -75,11 +75,21 @@ class CreativeAssetViewSet(viewsets.ModelViewSet):
     ordering = ['-created_at']
 
     def get_queryset(self):
-        qs = CreativeAsset.objects.filter(advertiser=self.request.user)
+        if self.request.user.is_staff or self.request.user.role == 'admin':
+            qs = CreativeAsset.objects.all()
+        else:
+            qs = CreativeAsset.objects.filter(advertiser=self.request.user)
+            
         campaign_id = self.request.query_params.get('campaign')
         if campaign_id:
             qs = qs.filter(campaign_id=campaign_id)
         return qs
+
+    def get_serializer_class(self):
+        if (self.request.user.is_staff or self.request.user.role == 'admin') and self.action in ['list', 'retrieve']:
+            from .serializers import AdminCreativeAssetSerializer
+            return AdminCreativeAssetSerializer
+        return CreativeAssetSerializer
 
     def perform_create(self, serializer):
         serializer.save(advertiser=self.request.user)
