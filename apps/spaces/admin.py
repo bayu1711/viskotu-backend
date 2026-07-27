@@ -21,3 +21,14 @@ class SpaceAdmin(admin.ModelAdmin):
     ordering = ['-created_at']
     readonly_fields = ['created_at', 'updated_at']
     inlines = [SpacePhotoInline, SpaceAvailabilityInline]
+
+from django.apps import apps
+try:
+    app = apps.get_app_config('spaces')
+    for model_name, model in app.models.items():
+        try:
+            admin.site.register(model)
+        except admin.sites.AlreadyRegistered:
+            pass
+except Exception:
+    pass

@@ -15,6 +15,9 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework.decorators import action
 import boto3
+import logging
+
+logger = logging.getLogger(__name__)
 
 from .serializers import (
     UserSerializer, SignupSerializer, LoginSerializer,
@@ -40,10 +43,11 @@ class SignupView(APIView):
         serializer = SignupSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        user.send_verification_email(request)
+        email_sent = user.send_verification_email(request)
         tokens = get_tokens_for_user(user)
         return Response({
             'user': UserSerializer(user).data,
+            'email_sent': email_sent,
             **tokens,
         }, status=status.HTTP_201_CREATED)
 
@@ -91,7 +95,36 @@ class MeView(APIView):
         return Response(UserSerializer(request.user).data)
 
     def patch(self, request):
-        serializer = UserSerializer(request.user, data=request.data, partial=True)
+        user = request.user
+        
+        # Handle Advertiser Profile
+        advertiser_data = request.data.pop('advertiser_profile', None)
+        if advertiser_data is not None:
+            from .models import AdvertiserProfile
+            profile, _ = AdvertiserProfile.objects.get_or_create(user=user)
+            for k, v in advertiser_data.items():
+                setattr(profile, k, v)
+            profile.save()
+
+        # Handle Space Owner Profile
+        space_owner_data = request.data.pop('space_owner_profile', None)
+        if space_owner_data is not None:
+            from .models import SpaceOwnerProfile
+            profile, _ = SpaceOwnerProfile.objects.get_or_create(user=user)
+            for k, v in space_owner_data.items():
+                setattr(profile, k, v)
+            profile.save()
+
+        # Handle Production Partner Profile
+        production_data = request.data.pop('production_partner_profile', None)
+        if production_data is not None:
+            from .models import ProductionPartnerProfile
+            profile, _ = ProductionPartnerProfile.objects.get_or_create(user=user)
+            for k, v in production_data.items():
+                setattr(profile, k, v)
+            profile.save()
+
+        serializer = UserSerializer(user, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
@@ -175,7 +208,9 @@ class ResendVerificationView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        request.user.send_verification_email(request)
+        email_sent = request.user.send_verification_email(request)
+        if not email_sent:
+            return Response({'detail': 'Failed to send verification email. Please check your email configuration.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         return Response({'detail': 'Verification email sent.'})
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -202,8 +237,11 @@ class UserViewSet(viewsets.ModelViewSet):
             client = boto3.client('rekognition', region_name='us-east-1')
             response = client.detect_text(Image={'Bytes': image_bytes})
             extracted_text = " ".join([text['DetectedText'].lower() for text in response.get('TextDetections', [])])
-        except Exception:
-            # Fallback for dummy verification if AWS isn't set up
+        except Exception as e:
+            logger.error(f"AWS Rekognition error: {e}")
+            if not settings.DEBUG:
+                return Response({'error': 'Failed to process identity document. Please try again or contact support.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            # Fallback for local development only
             extracted_text = (user.first_name + " " + user.last_name).lower() if user.first_name else ""
         
         first_name = user.first_name.lower() if user.first_name else ''

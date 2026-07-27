@@ -54,6 +54,17 @@ class User(AbstractBaseUser, PermissionsMixin):
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
     company_name = models.CharField(max_length=200, blank=True)
     bio = models.TextField(blank=True)
+    
+    # Location
+    city = models.CharField(max_length=100, blank=True)
+    state = models.CharField(max_length=100, blank=True)
+    address = models.CharField(max_length=255, blank=True)
+    
+    # Business Profile
+    account_type = models.CharField(max_length=20, default='personal')
+    business_type = models.CharField(max_length=50, blank=True)
+    company_size = models.CharField(max_length=50, blank=True)
+    tax_id = models.CharField(max_length=50, blank=True)
 
     # KYC / verification
     kyc_status = models.CharField(
@@ -93,7 +104,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         self.otp_created_at = timezone.now()
         self.save(update_fields=['otp_code', 'otp_created_at'])
 
-        send_mail(
+        sent_count = send_mail(
             subject='Verify your Viskotu email address',
             message=f'Your verification code is: {otp}',
             from_email=settings.DEFAULT_FROM_EMAIL,
@@ -101,6 +112,22 @@ class User(AbstractBaseUser, PermissionsMixin):
             html_message=f'<p>Hi {self.name},</p><p>Your email verification code is: <strong>{otp}</strong></p><p>This code expires in 15 minutes.</p><p>Thank you,<br/>Viskotu Team</p>',
             fail_silently=True,
         )
+        return sent_count > 0
+
+class AdvertiserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='advertiser_profile')
+    industry = models.CharField(max_length=100, blank=True)
+    monthly_budget = models.CharField(max_length=50, blank=True)
+    
+    def __str__(self):
+        return f"{self.user.name}'s Advertiser Profile"
+
+class SpaceOwnerProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='space_owner_profile')
+    number_of_spaces = models.CharField(max_length=50, blank=True)
+    
+    def __str__(self):
+        return f"{self.user.name}'s Space Owner Profile"
 
 class ProductionPartnerProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='production_partner_profile')
@@ -113,6 +140,7 @@ class ProductionPartnerProfile(models.Model):
     is_platform_network = models.BooleanField(default=True)
     production_lead_days = models.IntegerField(default=5)
     shipping_days = models.IntegerField(default=3)
+    capacity = models.CharField(max_length=100, blank=True)
 
     def __str__(self):
         return f"{self.user.name}'s Production Profile"

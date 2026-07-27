@@ -16,3 +16,14 @@ class SiteSettingsAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         # Prevent deletion of singleton settings
         return False
+
+from django.apps import apps
+try:
+    app = apps.get_app_config('core')
+    for model_name, model in app.models.items():
+        try:
+            admin.site.register(model)
+        except admin.sites.AlreadyRegistered:
+            pass
+except Exception:
+    pass

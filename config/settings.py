@@ -169,7 +169,7 @@ SIMPLE_JWT = {
 # ─── CORS ─────────────────────────────────────────────────────────────────
 CORS_ALLOWED_ORIGINS = config(
     'CORS_ALLOWED_ORIGINS',
-    default='http://localhost:3000',
+    default='http://localhost:3000,http://127.0.0.1:3000',
     cast=Csv()
 )
 CORS_ALLOW_CREDENTIALS = True
@@ -186,13 +186,15 @@ SPECTACULAR_SETTINGS = {
 }
 
 # ─── Email ────────────────────────────────────────────────────────────────
-EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.smtp.EmailBackend')
+EMAIL_BACKEND = config('EMAIL_BACKEND', default='apps.core.utils.bird_backend.BirdEmailBackend')
+BIRD_API_KEY = config('BIRD_API_KEY', default='bk_eu1_NBO3HzkXBGbq3t4U0fDbdkf0EYURs')
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='onboarding@messagebird.dev')
+
 EMAIL_HOST = config('EMAIL_HOST', default='smtp.bird.com')
 EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
 EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
 EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
-DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@viskotu.com')
 
 # ─── Paddle Checkout ──────────────────────────────────────────────────────
 PADDLE_API_KEY = config('PADDLE_API_KEY', default='')

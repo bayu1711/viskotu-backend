@@ -25,3 +25,14 @@ class UserAdmin(BaseUserAdmin):
             'fields': ('email', 'password1', 'password2', 'role', 'first_name', 'last_name'),
         }),
     )
+
+from django.apps import apps
+try:
+    app = apps.get_app_config('users')
+    for model_name, model in app.models.items():
+        try:
+            admin.site.register(model)
+        except admin.sites.AlreadyRegistered:
+            pass
+except Exception:
+    pass

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
-from .models import ProductionPartnerProfile, ManagedAccess
+from .models import ProductionPartnerProfile, AdvertiserProfile, SpaceOwnerProfile, ManagedAccess
 
 User = get_user_model()
 
@@ -12,9 +12,21 @@ class ProductionPartnerProfileSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class AdvertiserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AdvertiserProfile
+        fields = '__all__'
+
+class SpaceOwnerProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SpaceOwnerProfile
+        fields = '__all__'
+
 class UserSerializer(serializers.ModelSerializer):
     name = serializers.CharField(read_only=True)
     production_partner_profile = ProductionPartnerProfileSerializer(read_only=True)
+    advertiser_profile = AdvertiserProfileSerializer(read_only=True)
+    space_owner_profile = SpaceOwnerProfileSerializer(read_only=True)
 
     class Meta:
         model = User
@@ -22,7 +34,8 @@ class UserSerializer(serializers.ModelSerializer):
             'id', 'email', 'first_name', 'last_name', 'name',
             'role', 'country', 'preferred_currency', 'is_email_verified', 'phone', 'avatar',
             'company_name', 'bio', 'kyc_status', 'created_at',
-            'production_partner_profile', 'onboarded_roles',
+            'city', 'state', 'address', 'account_type', 'business_type', 'company_size', 'tax_id',
+            'production_partner_profile', 'advertiser_profile', 'space_owner_profile', 'onboarded_roles',
             'reliability_score',
         ]
         read_only_fields = ['id', 'email', 'is_email_verified', 'created_at', 'reliability_score']
@@ -30,16 +43,20 @@ class UserSerializer(serializers.ModelSerializer):
 
 class SignupSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, validators=[validate_password])
-    confirm_password = serializers.CharField(write_only=True)
+    confirm_password = serializers.CharField(write_only=True, required=False)
     country = serializers.CharField(max_length=2, required=False)
+    first_name = serializers.CharField(required=True)
+    last_name = serializers.CharField(required=True)
 
     class Meta:
         model = User
         fields = ['email', 'password', 'confirm_password', 'first_name', 'last_name', 'role', 'country']
 
     def validate(self, attrs):
-        if attrs['password'] != attrs.pop('confirm_password'):
-            raise serializers.ValidationError({'confirm_password': 'Passwords do not match.'})
+        # Frontend already validates password match, so confirm_password is not strictly required here
+        if 'confirm_password' in attrs:
+            if attrs['password'] != attrs.pop('confirm_password'):
+                raise serializers.ValidationError({'confirm_password': 'Passwords do not match.'})
         return attrs
 
     def create(self, validated_data):

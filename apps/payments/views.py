@@ -119,44 +119,6 @@ class PaymentViewSet(viewsets.ModelViewSet):
         except requests.RequestException as e:
             return Response({'error': 'Failed to create transaction', 'details': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=False, methods=['post'], url_path='payhere-webhook', permission_classes=[permissions.AllowAny])
-    def payhere_webhook(self, request):
-        merchant_id = request.data.get('merchant_id')
-        order_id = request.data.get('order_id')
-        payhere_amount = request.data.get('payhere_amount')
-        payhere_currency = request.data.get('payhere_currency')
-        status_code = request.data.get('status_code')
-        md5sig = request.data.get('md5sig')
-        custom_1 = request.data.get('custom_1')
-        
-        my_merchant_id = os.environ.get('PAYHERE_MERCHANT_ID', getattr(settings, 'PAYHERE_MERCHANT_ID', ''))
-        merchant_secret = os.environ.get('PAYHERE_SECRET', getattr(settings, 'PAYHERE_SECRET', ''))
-        
-        hashed_secret = hashlib.md5(merchant_secret.encode('utf-8')).hexdigest().upper()
-        local_hash_string = f"{my_merchant_id}{order_id}{payhere_amount}{payhere_currency}{status_code}{hashed_secret}"
-        local_md5sig = hashlib.md5(local_hash_string.encode('utf-8')).hexdigest().upper()
-        
-        if local_md5sig == md5sig:
-            if status_code == '2':
-                # Payment success
-                if custom_1:
-                    try:
-                        from apps.campaigns.models import Campaign
-                        campaign = Campaign.objects.get(id=custom_1)
-                        campaign.status = 'funded'
-                        campaign.save()
-                        # Send email
-                        advertiser = getattr(campaign, 'advertiser', getattr(campaign, 'user', getattr(campaign, 'owner', None)))
-                        if advertiser:
-                            send_campaign_funded_email(campaign, advertiser)
-                    except (ImportError, Exception):
-                        pass
-                
-                return Response({'status': 'ok'}, status=status.HTTP_200_OK)
-            else:
-                return Response({'status': 'failed or pending'}, status=status.HTTP_200_OK)
-        else:
-            return Response({'error': 'Invalid signature'}, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['post'], url_path='paddle-webhook', permission_classes=[permissions.AllowAny])
     def paddle_webhook(self, request):
@@ -191,7 +153,7 @@ class PaymentViewSet(viewsets.ModelViewSet):
                         payment.paddle_transaction_id = str(transaction_id)
                     payment.save()
                 except Payment.DoesNotExist:
-                    pass
+                    logger.error(f"Paddle Webhook: Payment with ID {passthrough} does not exist.")
         return Response({'status': 'ok'})
 
 class PayoutViewSet(viewsets.ModelViewSet):
@@ -244,12 +206,14 @@ class PayoutViewSet(viewsets.ModelViewSet):
             payouts = Payout.objects.filter(recipient_id=uid, status='requested')
             total = payouts.aggregate(Sum('amount'))['amount__sum'] or 0
             if total > 0:
-                # Mock Wise API call
                 try:
-                    # requests.post('https://api.sandbox.transferwise.tech/v1/transfers', ...)
+                    # Mock Wise API call - normally would use requests.post() here
+                    # response = requests.post('https://api.sandbox.transferwise.tech/v1/transfers', ...)
+                    # response.raise_for_status()
                     pass
-                except Exception:
-                    pass
+                except requests.exceptions.RequestException as e:
+                    logger.error(f"Wise API Error: {e}")
+                    return Response({'error': 'Failed to process via Wise'}, status=status.HTTP_502_BAD_GATEWAY)
                 payouts.update(status='processing')
         return Response({'status': 'success'})
 
