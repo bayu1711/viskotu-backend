@@ -200,6 +200,10 @@ EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 PADDLE_API_KEY = config('PADDLE_API_KEY', default='')
 PADDLE_PRODUCT_ID = config('PADDLE_PRODUCT_ID', default='')
 
+# ─── PayHere Checkout ─────────────────────────────────────────────────────
+PAYHERE_MERCHANT_ID = config('PAYHERE_MERCHANT_ID', default='4OVyvZtlthI4JH5FFruf2e3PQ' if DEBUG else 'dummy_app_id')
+PAYHERE_SECRET = config('PAYHERE_SECRET', default='8LTmg28x5Xz4KGzxt65OHQ8bStYZULLPi8goCdNrw6ap' if DEBUG else 'dummy_app_secret')
+
 # ─── AWS S3 Media Storage ──────────────────────────────────────────────────
 # If AWS_ACCESS_KEY_ID is provided in the environment, use S3 for media.
 # Otherwise, fall back to local disk storage (useful for local dev without keys).

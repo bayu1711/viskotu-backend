@@ -42,8 +42,8 @@ class PaymentViewSet(viewsets.ModelViewSet):
         
         if gateway == 'payhere':
             import uuid
-            merchant_id = os.environ.get('PAYHERE_MERCHANT_ID', getattr(settings, 'PAYHERE_MERCHANT_ID', ''))
-            merchant_secret = os.environ.get('PAYHERE_SECRET', getattr(settings, 'PAYHERE_SECRET', ''))
+            merchant_id = getattr(settings, 'PAYHERE_MERCHANT_ID', '')
+            merchant_secret = getattr(settings, 'PAYHERE_SECRET', '')
 
             # If no PayHere credentials configured, return coming-soon signal
             if not merchant_id or not merchant_secret:
