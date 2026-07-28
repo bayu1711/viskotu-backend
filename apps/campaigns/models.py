@@ -68,13 +68,6 @@ class CreativeAsset(models.Model):
         ('pdf', 'PDF'),
     ]
 
-    APPROVAL_STATUS_CHOICES = [
-        ('pending', 'Pending Review'),
-        ('approved', 'Approved'),
-        ('rejected', 'Rejected'),
-        ('changes_requested', 'Changes Requested'),
-    ]
-
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     advertiser = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='creative_assets')
     campaign = models.ForeignKey(Campaign, on_delete=models.SET_NULL, null=True, blank=True, related_name='assets')
@@ -85,8 +78,6 @@ class CreativeAsset(models.Model):
     asset_type = models.CharField(max_length=20, choices=ASSET_TYPE_CHOICES, default='image')
     file_size = models.BigIntegerField(default=0)
     dimensions = models.JSONField(default=dict)  # {width, height, dpi}
-    approval_status = models.CharField(max_length=30, choices=APPROVAL_STATUS_CHOICES, default='pending')
-    rejection_reason = models.TextField(blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

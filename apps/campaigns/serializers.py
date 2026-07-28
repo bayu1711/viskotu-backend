@@ -12,7 +12,7 @@ class CreativeAssetSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'campaign', 'name', 'file', 'file_url', 'thumbnail',
             'thumbnail_url', 'asset_type', 'file_size', 'dimensions',
-            'approval_status', 'rejection_reason', 'created_at',
+            'created_at',
         ]
         read_only_fields = ['id', 'advertiser', 'created_at', 'file_url', 'thumbnail_url']
 
