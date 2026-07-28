@@ -1,11 +1,60 @@
 from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from .models import Campaign, CreativeAsset
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from .models import Campaign, CreativeAsset, CampaignObjective, TargetingRegion, TargetingMethod
 from .serializers import (
     CampaignSerializer, CampaignListSerializer, CreativeAssetSerializer,
+    CampaignObjectiveSerializer, TargetingRegionSerializer, TargetingMethodSerializer,
 )
+
+
+class CampaignObjectiveViewSet(viewsets.ModelViewSet):
+    """
+    - GET /campaigns/objectives/  → list all active objectives (anyone authenticated)
+    - POST/PUT/PATCH/DELETE       → admin only
+    """
+    serializer_class = CampaignObjectiveSerializer
+
+    def get_queryset(self):
+        return CampaignObjective.objects.filter(is_active=True)
+
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            return [IsAdminUser()]
+        return [IsAuthenticated()]
+
+
+class TargetingRegionViewSet(viewsets.ModelViewSet):
+    """
+    - GET /campaigns/regions/  → list all active regions
+    - POST/PUT/PATCH/DELETE    → admin only
+    """
+    serializer_class = TargetingRegionSerializer
+
+    def get_queryset(self):
+        return TargetingRegion.objects.filter(is_active=True)
+
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            return [IsAdminUser()]
+        return [IsAuthenticated()]
+
+
+class TargetingMethodViewSet(viewsets.ModelViewSet):
+    """
+    - GET /campaigns/methods/  → list all active targeting methods
+    - POST/PUT/PATCH/DELETE    → admin only
+    """
+    serializer_class = TargetingMethodSerializer
+
+    def get_queryset(self):
+        return TargetingMethod.objects.filter(is_active=True)
+
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            return [IsAdminUser()]
+        return [IsAuthenticated()]
 
 
 class CampaignViewSet(viewsets.ModelViewSet):

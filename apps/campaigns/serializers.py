@@ -1,6 +1,24 @@
 from rest_framework import serializers
-from .models import Campaign, CreativeAsset
+from .models import Campaign, CreativeAsset, CampaignObjective, TargetingRegion, TargetingMethod
 from apps.users.serializers import UserSerializer
+
+
+class CampaignObjectiveSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CampaignObjective
+        fields = ['id', 'code', 'label', 'tag', 'description', 'order']
+
+
+class TargetingRegionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TargetingRegion
+        fields = ['id', 'code', 'name', 'impressions', 'order']
+
+
+class TargetingMethodSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TargetingMethod
+        fields = ['id', 'code', 'label', 'description', 'order']
 
 
 class CreativeAssetSerializer(serializers.ModelSerializer):
@@ -40,11 +58,19 @@ class CampaignSerializer(serializers.ModelSerializer):
     advertiser = UserSerializer(read_only=True)
     assets = CreativeAssetSerializer(many=True, read_only=True)
     ctr = serializers.FloatField(read_only=True)
+    objective_detail = CampaignObjectiveSerializer(source='objective', read_only=True)
+    # Accept objective as a code string when writing
+    objective = serializers.SlugRelatedField(
+        slug_field='code',
+        queryset=CampaignObjective.objects.all(),
+        allow_null=True,
+        required=False,
+    )
 
     class Meta:
         model = Campaign
         fields = [
-            'id', 'advertiser', 'name', 'objective', 'status',
+            'id', 'advertiser', 'name', 'objective', 'objective_detail', 'status',
             'budget', 'spend', 'impressions', 'clicks', 'ctr', 'conversions',
             'start_date', 'end_date', 'target_locations', 'target_audience',
             'assets', 'created_at', 'updated_at',
@@ -59,11 +85,18 @@ class CampaignSerializer(serializers.ModelSerializer):
 class CampaignListSerializer(serializers.ModelSerializer):
     """Lightweight for dashboard list view."""
     ctr = serializers.FloatField(read_only=True)
+    objective_detail = CampaignObjectiveSerializer(source='objective', read_only=True)
+    objective = serializers.SlugRelatedField(
+        slug_field='code',
+        queryset=CampaignObjective.objects.all(),
+        allow_null=True,
+        required=False,
+    )
 
     class Meta:
         model = Campaign
         fields = [
-            'id', 'name', 'objective', 'status',
+            'id', 'name', 'objective', 'objective_detail', 'status',
             'budget', 'spend', 'impressions', 'clicks', 'ctr',
             'start_date', 'end_date', 'created_at',
         ]

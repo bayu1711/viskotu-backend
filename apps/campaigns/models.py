@@ -3,6 +3,62 @@ from django.db import models
 from django.conf import settings
 
 
+class CampaignObjective(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    code = models.CharField(max_length=50, unique=True)
+    label = models.CharField(max_length=100)
+    tag = models.CharField(max_length=50, blank=True)
+    description = models.TextField()
+    is_active = models.BooleanField(default=True)
+    order = models.IntegerField(default=0)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'campaign_objectives'
+        ordering = ['order', 'code']
+
+    def __str__(self):
+        return self.label
+
+class TargetingRegion(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    code = models.CharField(max_length=50, unique=True)
+    name = models.CharField(max_length=100)
+    impressions = models.IntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    order = models.IntegerField(default=0)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'targeting_regions'
+        ordering = ['order', 'name']
+
+    def __str__(self):
+        return self.name
+
+class TargetingMethod(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    code = models.CharField(max_length=50, unique=True)
+    label = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+    order = models.IntegerField(default=0)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'targeting_methods'
+        ordering = ['order', 'code']
+
+    def __str__(self):
+        return self.label
+
+
 class Campaign(models.Model):
     STATUS_CHOICES = [
         ('draft', 'Draft'),
@@ -17,18 +73,13 @@ class Campaign(models.Model):
         ('cancelled', 'Cancelled'),
     ]
 
-    OBJECTIVE_CHOICES = [
-        ('brand_awareness', 'Brand Awareness'),
-        ('product_launch', 'Product Launch'),
-        ('event_promotion', 'Event Promotion'),
-        ('retargeting', 'Retargeting'),
-    ]
+    # Objective options are now managed dynamically via CampaignObjective model
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     advertiser = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='campaigns')
 
     name = models.CharField(max_length=200)
-    objective = models.CharField(max_length=50, choices=OBJECTIVE_CHOICES, blank=True)
+    objective = models.ForeignKey(CampaignObjective, on_delete=models.SET_NULL, null=True, blank=True, related_name='campaigns')
     status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='draft')
 
     budget = models.DecimalField(max_digits=12, decimal_places=2, default=0)
