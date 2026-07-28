@@ -80,6 +80,7 @@ class CreativeAssetViewSet(viewsets.ModelViewSet):
         else:
             qs = CreativeAsset.objects.filter(advertiser=self.request.user)
             
+        qs = qs.filter(is_archived=False)
         campaign_id = self.request.query_params.get('campaign')
         if campaign_id:
             qs = qs.filter(campaign_id=campaign_id)
@@ -110,3 +111,24 @@ class CreativeAssetViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def destroy(self, request, *args, **kwargs):
+        asset = self.get_object()
+        
+        # Check associated campaigns
+        # In our model, asset.campaign points to a single campaign, but the frontend
+        # UI implies it could be used in multiple campaigns (it checks associatedCampaigns).
+        # We'll check the direct `campaign` field, as well as if there are any other relations.
+        # Based on models.py, a CreativeAsset belongs to ONE Campaign (ForeignKey).
+        
+        if asset.campaign:
+            c_status = asset.campaign.status
+            if c_status in ['active', 'live', 'in_progress', 'scheduled']:
+                return Response({'detail': 'Cannot delete an asset used in an active campaign.'}, status=status.HTTP_400_BAD_REQUEST)
+            elif c_status in ['completed', 'cancelled']:
+                asset.is_archived = True
+                asset.save()
+                return Response({'detail': 'Asset archived.'}, status=status.HTTP_204_NO_CONTENT)
+                
+        # If no campaign or campaign is draft, hard delete
+        return super().destroy(request, *args, **kwargs)

@@ -78,6 +78,7 @@ class CreativeAsset(models.Model):
     asset_type = models.CharField(max_length=20, choices=ASSET_TYPE_CHOICES, default='image')
     file_size = models.BigIntegerField(default=0)
     dimensions = models.JSONField(default=dict)  # {width, height, dpi}
+    is_archived = models.BooleanField(default=False)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
