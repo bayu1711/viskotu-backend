@@ -119,6 +119,62 @@ class PaymentViewSet(viewsets.ModelViewSet):
         except requests.RequestException as e:
             return Response({'error': 'Failed to create transaction', 'details': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+    @action(detail=False, methods=['post'], url_path='payhere-webhook', permission_classes=[permissions.AllowAny])
+    def payhere_webhook(self, request):
+        merchant_id = request.data.get('merchant_id')
+        order_id = request.data.get('order_id')
+        payhere_amount = request.data.get('payhere_amount')
+        payhere_currency = request.data.get('payhere_currency')
+        status_code = request.data.get('status_code')
+        md5sig_received = request.data.get('md5sig')
+
+        # Verify signature
+        merchant_secret = getattr(settings, 'PAYHERE_SECRET', '')
+        hashed_secret = hashlib.md5(merchant_secret.encode('utf-8')).hexdigest().upper()
+        hash_string = f"{merchant_id}{order_id}{payhere_amount}{payhere_currency}{status_code}{hashed_secret}"
+        expected_sig = hashlib.md5(hash_string.encode('utf-8')).hexdigest().upper()
+
+        if md5sig_received != expected_sig:
+            logger.error(f"PayHere Webhook: Invalid signature. Received: {md5sig_received}, expected: {expected_sig}")
+            return Response({'error': 'Invalid signature'}, status=403)
+
+        if str(status_code) == '2':  # 2 is success
+            campaign_id = request.data.get('custom_1')
+            payment_id = request.data.get('payment_id')
+
+            try:
+                campaign = Campaign.objects.get(id=campaign_id)
+                campaign.status = 'active'
+                campaign.save(update_fields=['status'])
+
+                # Create a payment record
+                from apps.placements.models import AdPlacement
+                placement = AdPlacement.objects.filter(campaign=campaign).first()
+
+                payment_exists = Payment.objects.filter(paddle_transaction_id=payment_id).exists()
+                if not payment_exists:
+                    Payment.objects.create(
+                        ad_placement=placement,
+                        payer=campaign.advertiser,
+                        amount=payhere_amount,
+                        currency=payhere_currency,
+                        status='succeeded',
+                        paddle_transaction_id=payment_id,
+                        description=f"PayHere payment for Campaign: {campaign.name}"
+                    )
+                
+                # Send confirmation email
+                try:
+                    send_campaign_funded_email(campaign, campaign.advertiser)
+                except Exception as e:
+                    logger.error(f"PayHere Webhook: Failed to send campaign funded email: {e}")
+
+                logger.info(f"PayHere Webhook: Successfully processed payment for campaign {campaign_id}")
+            except Campaign.DoesNotExist:
+                logger.error(f"PayHere Webhook: Campaign with ID {campaign_id} does not exist.")
+                return Response({'error': 'Campaign not found'}, status=404)
+
+        return Response({'status': 'ok'})
 
     @action(detail=False, methods=['post'], url_path='paddle-webhook', permission_classes=[permissions.AllowAny])
     def paddle_webhook(self, request):
