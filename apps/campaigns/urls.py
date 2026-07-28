@@ -5,15 +5,22 @@ from .views import (
     CampaignObjectiveViewSet, TargetingRegionViewSet, TargetingMethodViewSet,
 )
 
-router = DefaultRouter()
-router.register(r'', CampaignViewSet, basename='campaign')
-router.register(r'objectives', CampaignObjectiveViewSet, basename='campaign-objective')
-router.register(r'regions', TargetingRegionViewSet, basename='targeting-region')
-router.register(r'methods', TargetingMethodViewSet, basename='targeting-method')
+# Taxonomy router — must be wired BEFORE the main campaign router so that
+# /objectives/, /regions/, /methods/ are matched before {pk}/ captures them.
+taxonomy_router = DefaultRouter()
+taxonomy_router.register(r'objectives', CampaignObjectiveViewSet, basename='campaign-objective')
+taxonomy_router.register(r'regions', TargetingRegionViewSet, basename='targeting-region')
+taxonomy_router.register(r'methods', TargetingMethodViewSet, basename='targeting-method')
+
+# Main campaign CRUD router — registered with empty prefix so it occupies /campaigns/
+campaign_router = DefaultRouter()
+campaign_router.register(r'', CampaignViewSet, basename='campaign')
 
 assets_router = DefaultRouter()
 assets_router.register(r'', CreativeAssetViewSet, basename='creative-asset')
 
 urlpatterns = [
-    path('', include(router.urls)),
+    # Taxonomy routes first so they are matched before the pk-catching campaign routes
+    path('', include(taxonomy_router.urls)),
+    path('', include(campaign_router.urls)),
 ]
