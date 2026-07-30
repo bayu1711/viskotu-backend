@@ -1,10 +1,10 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions, viewsets
-from .models import SiteSettings, SupportTicket, SLAEvent, Category, ItemType, SurfaceMaterial
+from .models import SiteSettings, SupportTicket, SLAEvent, Category, ItemType, SurfaceMaterial, PointOfInterest
 from .serializers import (
     SiteSettingsSerializer, SupportTicketSerializer, SLAEventSerializer,
-    CategorySerializer, ItemTypeSerializer, SurfaceMaterialSerializer
+    CategorySerializer, ItemTypeSerializer, SurfaceMaterialSerializer, PointOfInterestSerializer
 )
 
 class SiteSettingsView(APIView):
@@ -94,3 +94,15 @@ class SurfaceMaterialViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = SurfaceMaterial.objects.filter(is_active=True)
     serializer_class = SurfaceMaterialSerializer
     permission_classes = [permissions.AllowAny]
+
+class PointOfInterestViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = PointOfInterest.objects.all()
+    serializer_class = PointOfInterestSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        category = self.request.query_params.get('category')
+        if category:
+            qs = qs.filter(category=category)
+        return qs

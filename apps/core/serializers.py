@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import SiteSettings, SupportTicket, SLAEvent, Category, ItemType, SurfaceMaterial
+from .models import SiteSettings, SupportTicket, SLAEvent, Category, ItemType, SurfaceMaterial, PointOfInterest
 
 
 class SiteSettingsSerializer(serializers.ModelSerializer):
@@ -45,3 +45,8 @@ class SurfaceMaterialSerializer(serializers.ModelSerializer):
     class Meta:
         model = SurfaceMaterial
         fields = ['id', 'name', 'description', 'isActive', 'sortOrder']
+
+class PointOfInterestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PointOfInterest
+        fields = ['id', 'name', 'category', 'lat', 'lng']

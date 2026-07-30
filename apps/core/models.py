@@ -255,3 +255,17 @@ class SurfaceMaterial(models.Model):
 
     def __str__(self):
         return self.name
+
+class PointOfInterest(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=200)
+    category = models.CharField(max_length=100)
+    lat = models.FloatField()
+    lng = models.FloatField()
+    
+    class Meta:
+        db_table = 'points_of_interest'
+        ordering = ['name']
+
+    def __str__(self):
+        return f"{self.name} ({self.category})"
