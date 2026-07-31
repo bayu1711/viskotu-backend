@@ -9,7 +9,7 @@ from .serializers import (
 
 
 class TaxonomyView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request):
         from .models import TaxonomyNode
