@@ -7,6 +7,24 @@ from .serializers import (
     CategorySerializer, ItemTypeSerializer, SurfaceMaterialSerializer, PointOfInterestSerializer
 )
 
+
+class TaxonomyView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        from .models import TaxonomyNode
+        nodes = TaxonomyNode.objects.filter(is_active=True).order_by('category', 'sort_order')
+        data = {}
+        for node in nodes:
+            if node.category not in data:
+                data[node.category] = []
+            data[node.category].append({
+                'value': node.value,
+                'label': node.label
+            })
+        return Response(data)
+
+
 class SiteSettingsView(APIView):
     """
     GET /api/v1/core/settings/ — Publicly accessible endpoint to fetch Privacy Policy & Terms.

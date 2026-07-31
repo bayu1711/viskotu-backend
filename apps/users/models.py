@@ -118,6 +118,7 @@ class AdvertiserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='advertiser_profile')
     industry = models.CharField(max_length=100, blank=True)
     monthly_budget = models.CharField(max_length=50, blank=True)
+    primary_goal = models.CharField(max_length=50, blank=True)
     
     def __str__(self):
         return f"{self.user.name}'s Advertiser Profile"

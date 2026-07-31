@@ -226,3 +226,6 @@ if config('AWS_ACCESS_KEY_ID', default=None):
     }
     AWS_DEFAULT_ACL = 'public-read'
 
+
+
+GOOGLE_CLIENT_ID = config('GOOGLE_CLIENT_ID', default='')
