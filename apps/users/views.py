@@ -312,6 +312,8 @@ from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from rest_framework_simplejwt.tokens import RefreshToken
 import uuid
+import urllib.request
+import json as stdlib_json
 
 class GoogleLoginView(APIView):
     permission_classes = [AllowAny]
@@ -324,17 +326,46 @@ class GoogleLoginView(APIView):
             return Response({'error': 'Token is required'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            # Verify the token
-            idinfo = id_token.verify_oauth2_token(
-                token, 
-                google_requests.Request(), 
-                settings.GOOGLE_CLIENT_ID
-            )
-            
+            idinfo = None
+
+            # --- Try 1: Verify as a JWT ID token ---
+            try:
+                idinfo = id_token.verify_oauth2_token(
+                    token,
+                    google_requests.Request(),
+                    settings.GOOGLE_CLIENT_ID
+                )
+            except ValueError:
+                pass  # Not an ID token — try as an OAuth2 access token below
+
+            # --- Try 2: Verify as an OAuth2 access token via Google userinfo ---
+            if idinfo is None:
+                req = urllib.request.Request(
+                    'https://www.googleapis.com/oauth2/v3/userinfo',
+                    headers={'Authorization': f'Bearer {token}'}
+                )
+                try:
+                    with urllib.request.urlopen(req, timeout=10) as resp:
+                        if resp.status == 200:
+                            idinfo = stdlib_json.loads(resp.read().decode())
+                        else:
+                            return Response(
+                                {'error': 'Invalid Google token'},
+                                status=status.HTTP_400_BAD_REQUEST
+                            )
+                except Exception:
+                    return Response(
+                        {'error': 'Invalid Google token'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+
+            if not idinfo or 'email' not in idinfo:
+                return Response({'error': 'Invalid Google token'}, status=status.HTTP_400_BAD_REQUEST)
+
             email = idinfo['email']
             first_name = idinfo.get('given_name', '')
             last_name = idinfo.get('family_name', '')
-            
+
             # Check if user exists
             user = User.objects.filter(email=email).first()
             if not user:
@@ -344,24 +375,21 @@ class GoogleLoginView(APIView):
                     first_name=first_name,
                     last_name=last_name,
                     role=role,
-                    is_email_verified=True, # Google emails are pre-verified
-                    account_type='personal' # Default to personal, can be updated later
+                    is_email_verified=True,  # Google emails are pre-verified
+                    account_type='personal'  # Default to personal, can be updated later
                 )
                 user.set_unusable_password()
                 user.save()
-            
+
             # Generate JWT tokens
             refresh = RefreshToken.for_user(user)
-            
+
             return Response({
                 'access': str(refresh.access_token),
                 'refresh': str(refresh),
                 'user': UserSerializer(user).data
             })
-            
-        except ValueError:
-            # Invalid token
-            return Response({'error': 'Invalid Google token'}, status=status.HTTP_400_BAD_REQUEST)
+
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
