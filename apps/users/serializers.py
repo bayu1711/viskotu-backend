@@ -34,7 +34,7 @@ class UserSerializer(serializers.ModelSerializer):
             'id', 'email', 'first_name', 'last_name', 'name',
             'role', 'country', 'preferred_currency', 'is_email_verified', 'phone', 'avatar',
             'company_name', 'bio', 'kyc_status', 'created_at',
-            'city', 'state', 'address', 'account_type', 'business_type', 'company_size', 'tax_id',
+            'city', 'state', 'address', 'account_type', 'business_type', 'company_size', 'tax_id', 'google_place_id',
             'production_partner_profile', 'advertiser_profile', 'space_owner_profile', 'onboarded_roles',
             'reliability_score',
         ]

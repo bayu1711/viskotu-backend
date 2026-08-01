@@ -53,6 +53,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     phone = models.CharField(max_length=30, blank=True)
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
     company_name = models.CharField(max_length=200, blank=True)
+    google_place_id = models.CharField(max_length=255, blank=True)
     bio = models.TextField(blank=True)
     
     # Location
