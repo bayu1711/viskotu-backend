@@ -45,8 +45,8 @@ class SignupSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, validators=[validate_password])
     confirm_password = serializers.CharField(write_only=True, required=False)
     country = serializers.CharField(max_length=2, required=False)
-    first_name = serializers.CharField(required=True)
-    last_name = serializers.CharField(required=True)
+    first_name = serializers.CharField(required=False, allow_blank=True)
+    last_name = serializers.CharField(required=False, allow_blank=True)
 
     class Meta:
         model = User
