@@ -102,27 +102,27 @@ class MeView(APIView):
         if advertiser_data is not None:
             from .models import AdvertiserProfile
             profile, _ = AdvertiserProfile.objects.get_or_create(user=user)
-            for k, v in advertiser_data.items():
-                setattr(profile, k, v)
-            profile.save()
+            profile_serializer = AdvertiserProfileSerializer(profile, data=advertiser_data, partial=True)
+            profile_serializer.is_valid(raise_exception=True)
+            profile_serializer.save()
 
         # Handle Space Owner Profile
         space_owner_data = request.data.pop('space_owner_profile', None)
         if space_owner_data is not None:
             from .models import SpaceOwnerProfile
             profile, _ = SpaceOwnerProfile.objects.get_or_create(user=user)
-            for k, v in space_owner_data.items():
-                setattr(profile, k, v)
-            profile.save()
+            profile_serializer = SpaceOwnerProfileSerializer(profile, data=space_owner_data, partial=True)
+            profile_serializer.is_valid(raise_exception=True)
+            profile_serializer.save()
 
         # Handle Production Partner Profile
         production_data = request.data.pop('production_partner_profile', None)
         if production_data is not None:
             from .models import ProductionPartnerProfile
             profile, _ = ProductionPartnerProfile.objects.get_or_create(user=user)
-            for k, v in production_data.items():
-                setattr(profile, k, v)
-            profile.save()
+            profile_serializer = ProductionPartnerProfileSerializer(profile, data=production_data, partial=True)
+            profile_serializer.is_valid(raise_exception=True)
+            profile_serializer.save()
 
         serializer = UserSerializer(user, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
