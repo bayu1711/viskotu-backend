@@ -164,3 +164,53 @@ class RoleSwitchTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.user.refresh_from_db()
         self.assertEqual(self.user.role, 'space-owner')
+
+
+class ProductionPartnerTests(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            email='user@example.com',
+            password='Password123!',
+            role='advertiser'
+        )
+        self.partner_user = User.objects.create_user(
+            email='partner@example.com',
+            password='Password123!',
+            role='production-partner',
+            first_name='Print',
+            last_name='Shop'
+        )
+        from .models import ProductionPartnerProfile
+        self.profile = ProductionPartnerProfile.objects.create(
+            user=self.partner_user,
+            location='Dallas, TX',
+            rating=4.8,
+            price_tier='$$$',
+            specialties=['Vinyl', 'Banner']
+        )
+        self.client.force_authenticate(user=self.user)
+
+    def test_list_partners_success(self):
+        url = '/api/v1/production-partners/'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('results', response.data)
+        self.assertEqual(len(response.data['results']), 1)
+        partner_data = response.data['results'][0]
+        self.assertEqual(partner_data['name'], 'Print Shop')
+        self.assertEqual(partner_data['location'], 'Dallas, TX')
+        self.assertEqual(partner_data['priceTier'], '$$$')
+        self.assertEqual(partner_data['rating'], 4.8)
+        self.assertEqual(partner_data['specialties'], ['Vinyl', 'Banner'])
+
+    def test_search_partners(self):
+        url = '/api/v1/production-partners/?search=Dallas'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['results']), 1)
+
+        url = '/api/v1/production-partners/?search=New York'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['results']), 0)
+

@@ -395,3 +395,30 @@ class GoogleLoginView(APIView):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
+from django.db.models import Q
+from .serializers import ProductionPartnerSerializer
+
+class ProductionPartnerViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = ProductionPartnerSerializer
+
+    def get_queryset(self):
+        queryset = User.objects.filter(role='production-partner').select_related('production_partner_profile')
+        
+        search = self.request.query_params.get('search')
+        if search:
+            queryset = queryset.filter(
+                Q(first_name__icontains=search) |
+                Q(last_name__icontains=search) |
+                Q(email__icontains=search) |
+                Q(production_partner_profile__location__icontains=search)
+            )
+            
+        location = self.request.query_params.get('location')
+        if location:
+            queryset = queryset.filter(production_partner_profile__location__icontains=location)
+            
+        return queryset
+
+

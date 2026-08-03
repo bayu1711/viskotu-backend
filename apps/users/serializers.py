@@ -153,3 +153,33 @@ class AdminUserSerializer(UserSerializer):
         if obj.role == 'advertiser':
             return Campaign.objects.filter(advertiser=obj).count()
         return Space.objects.filter(owner=obj).count()
+
+
+class ProductionPartnerSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(read_only=True)
+    verified = serializers.SerializerMethodField()
+    location = serializers.CharField(source='production_partner_profile.location', read_only=True, default='USA')
+    rating = serializers.FloatField(source='production_partner_profile.rating', read_only=True, default=4.5)
+    leadTime = serializers.CharField(source='production_partner_profile.lead_time', read_only=True, default='3-5 Days')
+    priceTier = serializers.CharField(source='production_partner_profile.price_tier', read_only=True, default='$$')
+    specialties = serializers.JSONField(source='production_partner_profile.specialties', read_only=True, default=list)
+    isHostSelectable = serializers.BooleanField(source='production_partner_profile.is_host_selectable', read_only=True, default=True)
+    isPlatformNetwork = serializers.BooleanField(source='production_partner_profile.is_platform_network', read_only=True, default=True)
+    productionLeadDays = serializers.IntegerField(source='production_partner_profile.production_lead_days', read_only=True, default=5)
+    shippingDays = serializers.IntegerField(source='production_partner_profile.shipping_days', read_only=True, default=3)
+    jobsCompleted = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = [
+            'id', 'name', 'verified', 'location', 'rating', 'leadTime',
+            'priceTier', 'specialties', 'isHostSelectable', 'isPlatformNetwork',
+            'productionLeadDays', 'shippingDays', 'jobsCompleted'
+        ]
+
+    def get_verified(self, obj):
+        return obj.kyc_status == 'verified'
+
+    def get_jobsCompleted(self, obj):
+        return getattr(obj, 'completed_jobs_count', 0)
+

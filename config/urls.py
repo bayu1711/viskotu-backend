@@ -9,6 +9,13 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
+from rest_framework.routers import DefaultRouter
+from apps.users.views import ProductionPartnerViewSet
+
+partner_router = DefaultRouter()
+partner_router.register(r'', ProductionPartnerViewSet, basename='production-partner')
+
+
 class AdminReportsDummyView(APIView):
     def get(self, request):
         return Response({"detail": "Reports coming soon", "results": []})
@@ -28,6 +35,7 @@ urlpatterns = [
     # API v1
     path('api/v1/core/', include('apps.core.urls')),
     path('api/v1/auth/', include('apps.users.urls')),
+    path('api/v1/production-partners/', include(partner_router.urls)),
     path('api/v1/spaces/', include('apps.spaces.urls')),
     path('api/v1/campaigns/', include('apps.campaigns.urls')),
     path('api/v1/creative-assets/', include('apps.campaigns.asset_urls')),
