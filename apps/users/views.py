@@ -23,6 +23,8 @@ from .serializers import (
     UserSerializer, SignupSerializer, LoginSerializer,
     ChangeRoleSerializer, PasswordResetRequestSerializer,
     PasswordResetConfirmSerializer, VerifyEmailSerializer,
+    AdvertiserProfileSerializer, SpaceOwnerProfileSerializer,
+    ProductionPartnerProfileSerializer,
 )
 
 User = get_user_model()
