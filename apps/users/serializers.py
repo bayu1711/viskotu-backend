@@ -6,23 +6,31 @@ from .models import ProductionPartnerProfile, AdvertiserProfile, SpaceOwnerProfi
 User = get_user_model()
 
 
+from apps.core.models import CompanySize, Industry, MonthlyBudget, PrimaryGoal, PrinterCapacity, SpaceCount
+
 class ProductionPartnerProfileSerializer(serializers.ModelSerializer):
+    capacity = serializers.SlugRelatedField(slug_field='value', queryset=PrinterCapacity.objects.filter(is_active=True), required=False, allow_null=True)
     class Meta:
         model = ProductionPartnerProfile
         fields = '__all__'
 
 
 class AdvertiserProfileSerializer(serializers.ModelSerializer):
+    industry = serializers.SlugRelatedField(slug_field='value', queryset=Industry.objects.filter(is_active=True), required=False, allow_null=True)
+    monthly_budget = serializers.SlugRelatedField(slug_field='value', queryset=MonthlyBudget.objects.filter(is_active=True), required=False, allow_null=True)
+    primary_goal = serializers.SlugRelatedField(slug_field='value', queryset=PrimaryGoal.objects.filter(is_active=True), required=False, allow_null=True)
     class Meta:
         model = AdvertiserProfile
         fields = '__all__'
 
 class SpaceOwnerProfileSerializer(serializers.ModelSerializer):
+    number_of_spaces = serializers.SlugRelatedField(slug_field='value', queryset=SpaceCount.objects.filter(is_active=True), required=False, allow_null=True)
     class Meta:
         model = SpaceOwnerProfile
         fields = '__all__'
 
 class UserSerializer(serializers.ModelSerializer):
+    company_size = serializers.SlugRelatedField(slug_field='value', queryset=CompanySize.objects.filter(is_active=True), required=False, allow_null=True)
     name = serializers.CharField(read_only=True)
     production_partner_profile = ProductionPartnerProfileSerializer(read_only=True)
     advertiser_profile = AdvertiserProfileSerializer(read_only=True)

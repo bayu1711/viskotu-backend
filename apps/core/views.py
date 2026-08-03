@@ -12,16 +12,16 @@ class TaxonomyView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def get(self, request):
-        from .models import TaxonomyNode
-        nodes = TaxonomyNode.objects.filter(is_active=True).order_by('category', 'sort_order')
-        data = {}
-        for node in nodes:
-            if node.category not in data:
-                data[node.category] = []
-            data[node.category].append({
-                'value': node.value,
-                'label': node.label
-            })
+        from .models import CompanySize, Industry, MonthlyBudget, PrimaryGoal, PrinterCapacity, SpaceCount
+        
+        data = {
+            'company_size': [{'value': obj.value, 'label': obj.label} for obj in CompanySize.objects.filter(is_active=True)],
+            'industry': [{'value': obj.value, 'label': obj.label} for obj in Industry.objects.filter(is_active=True)],
+            'monthly_budget': [{'value': obj.value, 'label': obj.label} for obj in MonthlyBudget.objects.filter(is_active=True)],
+            'primary_goal': [{'value': obj.value, 'label': obj.label} for obj in PrimaryGoal.objects.filter(is_active=True)],
+            'capacity': [{'value': obj.value, 'label': obj.label} for obj in PrinterCapacity.objects.filter(is_active=True)],
+            'number_of_spaces': [{'value': obj.value, 'label': obj.label} for obj in SpaceCount.objects.filter(is_active=True)],
+        }
         return Response(data)
 
 

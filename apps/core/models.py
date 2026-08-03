@@ -271,16 +271,43 @@ class PointOfInterest(models.Model):
         return f"{self.name} ({self.category})"
 
 
-class TaxonomyNode(models.Model):
+class AbstractTaxonomyModel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    category = models.CharField(max_length=50) # e.g. 'industry', 'company_size', 'primary_goal', 'capacity'
-    value = models.CharField(max_length=50)
+    value = models.CharField(max_length=50, unique=True)
     label = models.CharField(max_length=100)
     sort_order = models.IntegerField(default=0)
     is_active = models.BooleanField(default=True)
 
     class Meta:
-        ordering = ['category', 'sort_order', 'label']
+        abstract = True
+        ordering = ['sort_order', 'label']
 
     def __str__(self):
-        return f"{self.category}: {self.label}"
+        return self.label
+
+
+class CompanySize(AbstractTaxonomyModel):
+    class Meta(AbstractTaxonomyModel.Meta):
+        verbose_name_plural = 'Company Sizes'
+
+
+class Industry(AbstractTaxonomyModel):
+    class Meta(AbstractTaxonomyModel.Meta):
+        verbose_name_plural = 'Industries'
+
+
+class MonthlyBudget(AbstractTaxonomyModel):
+    pass
+
+
+class PrimaryGoal(AbstractTaxonomyModel):
+    pass
+
+
+class PrinterCapacity(AbstractTaxonomyModel):
+    class Meta(AbstractTaxonomyModel.Meta):
+        verbose_name_plural = 'Printer Capacities'
+
+
+class SpaceCount(AbstractTaxonomyModel):
+    pass

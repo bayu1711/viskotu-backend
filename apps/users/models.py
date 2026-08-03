@@ -64,7 +64,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     # Business Profile
     account_type = models.CharField(max_length=20, default='personal')
     business_type = models.CharField(max_length=50, blank=True)
-    company_size = models.CharField(max_length=50, blank=True)
+    company_size = models.ForeignKey('core.CompanySize', on_delete=models.SET_NULL, null=True, blank=True)
     tax_id = models.CharField(max_length=50, blank=True)
 
     # KYC / verification
@@ -117,16 +117,16 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 class AdvertiserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='advertiser_profile')
-    industry = models.CharField(max_length=100, blank=True)
-    monthly_budget = models.CharField(max_length=50, blank=True)
-    primary_goal = models.CharField(max_length=50, blank=True)
+    industry = models.ForeignKey('core.Industry', on_delete=models.SET_NULL, null=True, blank=True)
+    monthly_budget = models.ForeignKey('core.MonthlyBudget', on_delete=models.SET_NULL, null=True, blank=True)
+    primary_goal = models.ForeignKey('core.PrimaryGoal', on_delete=models.SET_NULL, null=True, blank=True)
     
     def __str__(self):
         return f"{self.user.name}'s Advertiser Profile"
 
 class SpaceOwnerProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='space_owner_profile')
-    number_of_spaces = models.CharField(max_length=50, blank=True)
+    number_of_spaces = models.ForeignKey('core.SpaceCount', on_delete=models.SET_NULL, null=True, blank=True)
     
     def __str__(self):
         return f"{self.user.name}'s Space Owner Profile"
@@ -142,7 +142,7 @@ class ProductionPartnerProfile(models.Model):
     is_platform_network = models.BooleanField(default=True)
     production_lead_days = models.IntegerField(default=5)
     shipping_days = models.IntegerField(default=3)
-    capacity = models.CharField(max_length=100, blank=True)
+    capacity = models.ForeignKey('core.PrinterCapacity', on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return f"{self.user.name}'s Production Profile"

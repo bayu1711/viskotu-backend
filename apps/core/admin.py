@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import SiteSettings, TaxonomyNode
+from .models import SiteSettings, CompanySize, Industry, MonthlyBudget, PrimaryGoal, PrinterCapacity, SpaceCount
 
 
 @admin.register(SiteSettings)
@@ -18,12 +18,11 @@ class SiteSettingsAdmin(admin.ModelAdmin):
         return False
 
 
-@admin.register(TaxonomyNode)
-class TaxonomyNodeAdmin(admin.ModelAdmin):
-    list_display = ['label', 'category', 'value', 'sort_order', 'is_active']
-    list_filter = ['category', 'is_active']
+class AbstractTaxonomyAdmin(admin.ModelAdmin):
+    list_display = ['label', 'value', 'sort_order', 'is_active']
+    list_filter = ['is_active']
     search_fields = ['label', 'value']
-    ordering = ['category', 'sort_order', 'label']
+    ordering = ['sort_order', 'label']
     list_editable = ['sort_order', 'is_active']
     actions = ['make_active', 'make_inactive']
 
@@ -36,6 +35,30 @@ class TaxonomyNodeAdmin(admin.ModelAdmin):
         queryset.update(is_active=False)
         self.message_user(request, f"{queryset.count()} item(s) marked as inactive.")
     make_inactive.short_description = "Mark selected items as inactive"
+
+@admin.register(CompanySize)
+class CompanySizeAdmin(AbstractTaxonomyAdmin):
+    pass
+
+@admin.register(Industry)
+class IndustryAdmin(AbstractTaxonomyAdmin):
+    pass
+
+@admin.register(MonthlyBudget)
+class MonthlyBudgetAdmin(AbstractTaxonomyAdmin):
+    pass
+
+@admin.register(PrimaryGoal)
+class PrimaryGoalAdmin(AbstractTaxonomyAdmin):
+    pass
+
+@admin.register(PrinterCapacity)
+class PrinterCapacityAdmin(AbstractTaxonomyAdmin):
+    pass
+
+@admin.register(SpaceCount)
+class SpaceCountAdmin(AbstractTaxonomyAdmin):
+    pass
 
 
 from django.apps import apps
