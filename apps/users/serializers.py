@@ -44,9 +44,9 @@ class UserSerializer(serializers.ModelSerializer):
             'company_name', 'bio', 'kyc_status', 'created_at',
             'city', 'state', 'address', 'account_type', 'business_type', 'company_size', 'tax_id', 'google_place_id',
             'production_partner_profile', 'advertiser_profile', 'space_owner_profile', 'onboarded_roles',
-            'reliability_score',
+            'reliability_score', 'is_superuser'
         ]
-        read_only_fields = ['id', 'email', 'is_email_verified', 'created_at', 'reliability_score']
+        read_only_fields = ['id', 'email', 'is_email_verified', 'created_at', 'reliability_score', 'is_superuser']
 
 
 class SignupSerializer(serializers.ModelSerializer):
