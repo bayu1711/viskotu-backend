@@ -404,7 +404,7 @@ class ProductionPartnerViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = ProductionPartnerSerializer
 
     def get_queryset(self):
-        queryset = User.objects.filter(role='production-partner').select_related('production_partner_profile')
+        queryset = User.objects.filter(role__in=['production-partner', 'production_partner']).select_related('production_partner_profile')
         
         search = self.request.query_params.get('search')
         if search:
