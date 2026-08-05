@@ -311,3 +311,38 @@ class PrinterCapacity(AbstractTaxonomyModel):
 
 class SpaceCount(AbstractTaxonomyModel):
     pass
+
+
+class Orientation(AbstractTaxonomyModel):
+    pass
+
+
+class PhysicalShape(AbstractTaxonomyModel):
+    class Meta(AbstractTaxonomyModel.Meta):
+        verbose_name_plural = 'Physical Shapes'
+
+
+class QualityStandard(AbstractTaxonomyModel):
+    class Meta(AbstractTaxonomyModel.Meta):
+        verbose_name_plural = 'Quality Standards'
+
+
+class AudienceBehavior(AbstractTaxonomyModel):
+    class Meta(AbstractTaxonomyModel.Meta):
+        verbose_name_plural = 'Audience Behaviors'
+
+
+class TrafficDensity(AbstractTaxonomyModel):
+    class Meta(AbstractTaxonomyModel.Meta):
+        verbose_name_plural = 'Traffic Densities'
+
+
+class PeakExposure(AbstractTaxonomyModel):
+    class Meta(AbstractTaxonomyModel.Meta):
+        verbose_name_plural = 'Peak Exposures'
+
+
+class BillingPeriod(AbstractTaxonomyModel):
+    class Meta(AbstractTaxonomyModel.Meta):
+        verbose_name_plural = 'Billing Periods'
+

@@ -12,7 +12,10 @@ class TaxonomyView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def get(self, request):
-        from .models import CompanySize, Industry, MonthlyBudget, PrimaryGoal, PrinterCapacity, SpaceCount
+        from .models import (
+            CompanySize, Industry, MonthlyBudget, PrimaryGoal, PrinterCapacity, SpaceCount,
+            Orientation, PhysicalShape, QualityStandard, AudienceBehavior, TrafficDensity, PeakExposure, BillingPeriod
+        )
         
         data = {
             'company_size': [{'value': obj.value, 'label': obj.label} for obj in CompanySize.objects.filter(is_active=True)],
@@ -21,6 +24,13 @@ class TaxonomyView(APIView):
             'primary_goal': [{'value': obj.value, 'label': obj.label} for obj in PrimaryGoal.objects.filter(is_active=True)],
             'capacity': [{'value': obj.value, 'label': obj.label} for obj in PrinterCapacity.objects.filter(is_active=True)],
             'number_of_spaces': [{'value': obj.value, 'label': obj.label} for obj in SpaceCount.objects.filter(is_active=True)],
+            'orientation': [{'value': obj.value, 'label': obj.label} for obj in Orientation.objects.filter(is_active=True)],
+            'physical_shape': [{'value': obj.value, 'label': obj.label} for obj in PhysicalShape.objects.filter(is_active=True)],
+            'quality_standard': [{'value': obj.value, 'label': obj.label} for obj in QualityStandard.objects.filter(is_active=True)],
+            'audience_behavior': [{'value': obj.value, 'label': obj.label} for obj in AudienceBehavior.objects.filter(is_active=True)],
+            'traffic_density': [{'value': obj.value, 'label': obj.label} for obj in TrafficDensity.objects.filter(is_active=True)],
+            'peak_exposure': [{'value': obj.value, 'label': obj.label} for obj in PeakExposure.objects.filter(is_active=True)],
+            'billing_period': [{'value': obj.value, 'label': obj.label} for obj in BillingPeriod.objects.filter(is_active=True)],
         }
         return Response(data)
 

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import SiteSettings, CompanySize, Industry, MonthlyBudget, PrimaryGoal, PrinterCapacity, SpaceCount
+from .models import SiteSettings, CompanySize, Industry, MonthlyBudget, PrimaryGoal, PrinterCapacity, SpaceCount, Orientation, PhysicalShape, QualityStandard, AudienceBehavior, TrafficDensity, PeakExposure, BillingPeriod
 
 
 @admin.register(SiteSettings)
@@ -58,6 +58,34 @@ class PrinterCapacityAdmin(AbstractTaxonomyAdmin):
 
 @admin.register(SpaceCount)
 class SpaceCountAdmin(AbstractTaxonomyAdmin):
+    pass
+
+@admin.register(Orientation)
+class OrientationAdmin(AbstractTaxonomyAdmin):
+    pass
+
+@admin.register(PhysicalShape)
+class PhysicalShapeAdmin(AbstractTaxonomyAdmin):
+    pass
+
+@admin.register(QualityStandard)
+class QualityStandardAdmin(AbstractTaxonomyAdmin):
+    pass
+
+@admin.register(AudienceBehavior)
+class AudienceBehaviorAdmin(AbstractTaxonomyAdmin):
+    pass
+
+@admin.register(TrafficDensity)
+class TrafficDensityAdmin(AbstractTaxonomyAdmin):
+    pass
+
+@admin.register(PeakExposure)
+class PeakExposureAdmin(AbstractTaxonomyAdmin):
+    pass
+
+@admin.register(BillingPeriod)
+class BillingPeriodAdmin(AbstractTaxonomyAdmin):
     pass
 
 
