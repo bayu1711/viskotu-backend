@@ -86,11 +86,12 @@ class SpaceSerializer(serializers.ModelSerializer):
     owner = UserSerializer(read_only=True)
     primary_photo = serializers.SerializerMethodField()
     category = serializers.SerializerMethodField()
+    category_label = serializers.SerializerMethodField()
 
     class Meta:
         model = Space
         fields = [
-            'id', 'owner', 'name', 'description', 'category', 'item_type',
+            'id', 'owner', 'name', 'description', 'category', 'category_label', 'item_type',
             'address', 'city', 'state', 'zip_code', 'latitude', 'longitude',
             'width', 'height', 'material', 'min_dpi', 'accepted_formats',
             'base_rate', 'billing_period', 'min_placement_duration',
@@ -105,7 +106,15 @@ class SpaceSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'owner', 'created_at', 'updated_at']
 
     def get_category(self, obj):
-        return resolve_choice_to_category_id(obj.category)
+        """Return the internal choice value (e.g. 'fixed', 'vehicles')"""
+        return obj.category
+
+    def get_category_label(self, obj):
+        """Return human-readable label for the category"""
+        for choice_val, label in Space.CATEGORY_CHOICES:
+            if obj.category == choice_val:
+                return label
+        return obj.category.replace('_', ' ').title() if obj.category else ''
 
     def get_primary_photo(self, obj):
         primary = obj.photos.filter(is_primary=True).first() or obj.photos.first()
@@ -147,7 +156,7 @@ class SpaceListSerializer(serializers.ModelSerializer):
         ]
 
     def get_category(self, obj):
-        return resolve_choice_to_category_id(obj.category)
+        return obj.category
 
     def get_primary_photo(self, obj):
         primary = obj.photos.filter(is_primary=True).first() or obj.photos.first()
@@ -156,4 +165,3 @@ class SpaceListSerializer(serializers.ModelSerializer):
             url = primary.image.url
             return request.build_absolute_uri(url) if request else url
         return None
-
