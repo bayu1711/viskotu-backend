@@ -14,7 +14,7 @@ class TaxonomyView(APIView):
     def get(self, request):
         from .models import (
             CompanySize, Industry, MonthlyBudget, PrimaryGoal, PrinterCapacity, SpaceCount,
-            Orientation, PhysicalShape, QualityStandard, AudienceBehavior, TrafficDensity, PeakExposure, BillingPeriod
+            Orientation, PhysicalShape, QualityStandard, AudienceBehavior, TrafficDensity, PeakExposure, BillingPeriod, ProofOfPlayMethod
         )
         
         data = {
@@ -31,6 +31,7 @@ class TaxonomyView(APIView):
             'traffic_density': [{'value': obj.value, 'label': obj.label} for obj in TrafficDensity.objects.filter(is_active=True)],
             'peak_exposure': [{'value': obj.value, 'label': obj.label} for obj in PeakExposure.objects.filter(is_active=True)],
             'billing_period': [{'value': obj.value, 'label': obj.label} for obj in BillingPeriod.objects.filter(is_active=True)],
+            'proof_of_play_method': [{'value': obj.value, 'label': obj.label} for obj in ProofOfPlayMethod.objects.filter(is_active=True)],
         }
         return Response(data)
 

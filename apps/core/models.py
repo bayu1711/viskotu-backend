@@ -346,3 +346,8 @@ class BillingPeriod(AbstractTaxonomyModel):
     class Meta(AbstractTaxonomyModel.Meta):
         verbose_name_plural = 'Billing Periods'
 
+
+class ProofOfPlayMethod(AbstractTaxonomyModel):
+    class Meta(AbstractTaxonomyModel.Meta):
+        verbose_name_plural = 'Proof of Play Methods'
+

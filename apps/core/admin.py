@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import SiteSettings, CompanySize, Industry, MonthlyBudget, PrimaryGoal, PrinterCapacity, SpaceCount, Orientation, PhysicalShape, QualityStandard, AudienceBehavior, TrafficDensity, PeakExposure, BillingPeriod
+from .models import SiteSettings, CompanySize, Industry, MonthlyBudget, PrimaryGoal, PrinterCapacity, SpaceCount, Orientation, PhysicalShape, QualityStandard, AudienceBehavior, TrafficDensity, PeakExposure, BillingPeriod, ProofOfPlayMethod
 
 
 @admin.register(SiteSettings)
@@ -86,6 +86,11 @@ class PeakExposureAdmin(AbstractTaxonomyAdmin):
 
 @admin.register(BillingPeriod)
 class BillingPeriodAdmin(AbstractTaxonomyAdmin):
+    pass
+
+
+@admin.register(ProofOfPlayMethod)
+class ProofOfPlayMethodAdmin(AbstractTaxonomyAdmin):
     pass
 
 

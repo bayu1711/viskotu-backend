@@ -6,7 +6,7 @@ django.setup()
 
 from apps.core.models import (
     Orientation, PhysicalShape, QualityStandard,
-    AudienceBehavior, TrafficDensity, PeakExposure, BillingPeriod
+    AudienceBehavior, TrafficDensity, PeakExposure, BillingPeriod, ProofOfPlayMethod
 )
 
 taxonomies = {
@@ -52,6 +52,11 @@ taxonomies = {
         {'value': 'monthly', 'label': 'per month', 'sort_order': 4},
         {'value': 'yearly', 'label': 'per year', 'sort_order': 5},
         {'value': 'custom', 'label': 'custom period', 'sort_order': 6},
+    ],
+    ProofOfPlayMethod: [
+        {'value': 'gps-photo', 'label': 'GPS-tagged Photo (App)', 'sort_order': 1},
+        {'value': 'video-walkaround', 'label': 'Video Walk-around', 'sort_order': 2},
+        {'value': 'digital-log', 'label': 'Digital Log (Screens only)', 'sort_order': 3},
     ]
 }
 
