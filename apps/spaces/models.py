@@ -33,6 +33,7 @@ class Space(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
+    quantity = models.IntegerField(default=1)
     item_type = models.CharField(max_length=100, blank=True)
     usage_type = models.CharField(max_length=50, blank=True)
 
@@ -46,6 +47,7 @@ class Space(models.Model):
     end_point = models.CharField(max_length=500, blank=True)
     primary_roads = models.CharField(max_length=500, blank=True)
     service_radius = models.IntegerField(null=True, blank=True)
+    facing_direction = models.CharField(max_length=50, blank=True)
 
     # Specifications
     width = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
@@ -55,6 +57,7 @@ class Space(models.Model):
     accepted_formats = models.JSONField(default=list)
     orientation = models.CharField(max_length=50, blank=True)
     physical_shape = models.CharField(max_length=50, blank=True)
+    reference_photo = models.ImageField(upload_to='spaces/references/', null=True, blank=True)
     designer_notes = models.TextField(blank=True)
 
     # Pricing

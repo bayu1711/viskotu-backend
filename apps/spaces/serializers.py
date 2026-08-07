@@ -91,11 +91,11 @@ class SpaceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Space
         fields = [
-            'id', 'owner', 'name', 'description', 'category', 'category_label', 'item_type', 'usage_type',
+            'id', 'owner', 'name', 'description', 'category', 'category_label', 'quantity', 'item_type', 'usage_type',
             'address', 'city', 'state', 'zip_code', 'latitude', 'longitude',
-            'end_point', 'primary_roads', 'service_radius',
+            'end_point', 'primary_roads', 'service_radius', 'facing_direction',
             'width', 'height', 'material', 'min_dpi', 'accepted_formats',
-            'orientation', 'physical_shape', 'designer_notes',
+            'orientation', 'physical_shape', 'reference_photo', 'designer_notes',
             'base_rate', 'billing_period', 'custom_period_days', 'min_placement_duration',
             'bulk_discount_enabled', 'bulk_discount_percentage',
             'fulfillment_type', 'self_fulfillment_reason',
