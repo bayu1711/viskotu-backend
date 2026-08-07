@@ -34,6 +34,7 @@ class Space(models.Model):
     description = models.TextField(blank=True)
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
     item_type = models.CharField(max_length=100, blank=True)
+    usage_type = models.CharField(max_length=50, blank=True)
 
     # Location
     address = models.CharField(max_length=500, blank=True)
@@ -42,6 +43,9 @@ class Space(models.Model):
     zip_code = models.CharField(max_length=20, blank=True)
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    end_point = models.CharField(max_length=500, blank=True)
+    primary_roads = models.CharField(max_length=500, blank=True)
+    service_radius = models.IntegerField(null=True, blank=True)
 
     # Specifications
     width = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
@@ -49,14 +53,18 @@ class Space(models.Model):
     material = models.CharField(max_length=100, blank=True)
     min_dpi = models.IntegerField(default=300)
     accepted_formats = models.JSONField(default=list)
+    orientation = models.CharField(max_length=50, blank=True)
+    physical_shape = models.CharField(max_length=50, blank=True)
+    designer_notes = models.TextField(blank=True)
 
     # Pricing
     base_rate = models.DecimalField(max_digits=10, decimal_places=2)
     billing_period = models.CharField(
         max_length=20,
-        choices=[('hourly','Hourly'),('daily','Daily'),('weekly','Weekly'),('monthly','Monthly'),('yearly','Yearly')],
+        choices=[('hourly','Hourly'),('daily','Daily'),('weekly','Weekly'),('monthly','Monthly'),('yearly','Yearly'),('custom','Custom')],
         default='daily'
     )
+    custom_period_days = models.IntegerField(null=True, blank=True)
     min_placement_duration = models.IntegerField(default=1)
     bulk_discount_enabled = models.BooleanField(default=False)
     bulk_discount_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0)
@@ -69,6 +77,7 @@ class Space(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
         null=True, blank=True, related_name='preferred_for_spaces'
     )
+    proof_of_play_method = models.CharField(max_length=50, blank=True)
 
     # Lead times
     install_lead_days = models.IntegerField(default=2)
@@ -79,8 +88,11 @@ class Space(models.Model):
     is_featured = models.BooleanField(default=False)
     occupancy_rate = models.IntegerField(default=0)
 
-    # Stats
+    # Stats & Visibility
     impressions_estimate = models.CharField(max_length=50, blank=True)
+    audience_behaviors = models.JSONField(default=list, blank=True)
+    traffic_densities = models.JSONField(default=list, blank=True)
+    peak_exposures = models.JSONField(default=list, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

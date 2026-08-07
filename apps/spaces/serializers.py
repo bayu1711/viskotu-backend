@@ -91,16 +91,19 @@ class SpaceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Space
         fields = [
-            'id', 'owner', 'name', 'description', 'category', 'category_label', 'item_type',
+            'id', 'owner', 'name', 'description', 'category', 'category_label', 'item_type', 'usage_type',
             'address', 'city', 'state', 'zip_code', 'latitude', 'longitude',
+            'end_point', 'primary_roads', 'service_radius',
             'width', 'height', 'material', 'min_dpi', 'accepted_formats',
-            'base_rate', 'billing_period', 'min_placement_duration',
+            'orientation', 'physical_shape', 'designer_notes',
+            'base_rate', 'billing_period', 'custom_period_days', 'min_placement_duration',
             'bulk_discount_enabled', 'bulk_discount_percentage',
             'fulfillment_type', 'self_fulfillment_reason',
             'print_partner_routing', 'preferred_production_partner',
-            'install_lead_days', 'production_lead_days',
+            'proof_of_play_method', 'install_lead_days', 'production_lead_days',
             'status', 'is_featured', 'occupancy_rate',
-            'impressions_estimate', 'photos', 'primary_photo',
+            'impressions_estimate', 'audience_behaviors', 'traffic_densities', 'peak_exposures',
+            'photos', 'primary_photo',
             'created_at', 'updated_at',
         ]
         read_only_fields = ['id', 'owner', 'created_at', 'updated_at']
