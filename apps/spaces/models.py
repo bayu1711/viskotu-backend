@@ -6,11 +6,13 @@ from django.conf import settings
 class Space(models.Model):
     CATEGORY_CHOICES = [
         ('vehicles', 'Vehicles'),
-        ('gadgets', 'Gadgets'),
         ('fixed', 'Fixed Spaces'),
-        ('wearables', 'Wearables'),
-        ('events', 'Events'),
-        ('animals', 'Animals'),
+        ('gadgets', 'Gadgets'),
+        ('lifestyle', 'Lifestyle'),
+        ('pets', 'Pets'),
+        ('sports', 'Sports'),
+        ('storefronts', 'Storefronts'),
+        ('accessories', 'Accessories'),
     ]
 
     STATUS_CHOICES = [
