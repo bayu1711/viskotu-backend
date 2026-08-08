@@ -52,6 +52,10 @@ class DashboardAnalyticsView(APIView):
     def get_space_owner_stats(self, user):
         spaces = Space.objects.filter(owner=user)
         active_listings = spaces.filter(status='ACTIVE').count()
+        total_spaces = spaces.count()
+        occupied_spaces = spaces.filter(status='OCCUPIED').count()
+        occupancy_rate = (occupied_spaces / total_spaces * 100) if total_spaces > 0 else 0
+
         revenue = Payout.objects.filter(recipient=user, status='paid').aggregate(total=Sum('amount'))['total'] or 0
         pending_requests = AdPlacement.objects.filter(space__owner=user, status='PENDING').count()
         
@@ -59,6 +63,11 @@ class DashboardAnalyticsView(APIView):
             "active_listings": active_listings,
             "total_revenue": float(revenue),
             "pending_requests": pending_requests,
+            "occupancy_rate": occupancy_rate,
+            "trends": {
+                "revenue": {"value": 0, "direction": "neutral"},
+                "occupancy": {"value": 0, "direction": "neutral"}
+            }
         })
 
     def get_production_partner_stats(self, user):
