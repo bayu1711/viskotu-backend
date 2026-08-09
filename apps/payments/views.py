@@ -227,6 +227,40 @@ class PayoutViewSet(viewsets.ModelViewSet):
             status='pending'
         )
 
+    @action(detail=False, methods=['get'], url_path='stats')
+    def stats(self, request):
+        user = request.user
+        
+        pending = Payout.objects.filter(recipient=user, status='pending').aggregate(Sum('amount'))['amount__sum'] or 0
+        processing = Payout.objects.filter(recipient=user, status__in=['requested', 'processing', 'in_transit']).aggregate(Sum('amount'))['amount__sum'] or 0
+        total_earned = Payout.objects.filter(recipient=user, status='paid').aggregate(Sum('amount'))['amount__sum'] or 0
+        
+        from django.db.models import Count, F
+        spaces_data = Payout.objects.filter(recipient=user, ad_placement__isnull=False)\
+            .values('ad_placement__space__id', 'ad_placement__space__name')\
+            .annotate(
+                ad_placements=Count('ad_placement', distinct=True),
+                net=Sum('amount')
+            )
+            
+        spaces_perf = []
+        for s in spaces_data:
+            net_amt = float(s['net'] or 0)
+            spaces_perf.append({
+                'id': str(s['ad_placement__space__id']),
+                'name': s['ad_placement__space__name'],
+                'ad_placements': s['ad_placements'],
+                'revenue': net_amt / 0.9, # Mocking 10% platform fee logic
+                'net': net_amt
+            })
+
+        return Response({
+            'available_balance': float(pending),
+            'processing_balance': float(processing),
+            'total_earned': float(total_earned),
+            'space_performance': spaces_perf
+        })
+
     @action(detail=False, methods=['post'], url_path='request-withdrawal')
     def request_withdrawal(self, request):
         payouts = Payout.objects.filter(recipient=request.user, status='pending')
