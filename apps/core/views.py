@@ -28,7 +28,7 @@ class TaxonomyView(APIView):
             'orientation': [{'value': obj.value, 'label': obj.label} for obj in Orientation.objects.filter(is_active=True)],
             'physical_shape': [{'value': obj.value, 'label': obj.label} for obj in PhysicalShape.objects.filter(is_active=True)],
             'quality_standard': [{'value': obj.value, 'label': obj.label} for obj in QualityStandard.objects.filter(is_active=True)],
-            'print_resolution': [{'value': obj.value, 'label': obj.label} for obj in PrintResolution.objects.filter(is_active=True)],
+            'print_resolution': [{'value': obj.value, 'label': f"{obj.label} - {obj.description}" if obj.description else obj.label} for obj in PrintResolution.objects.filter(is_active=True)],
             'usage_type': [{'value': obj.value, 'label': obj.label} for obj in UsageType.objects.filter(is_active=True)],
             'audience_behavior': [{'value': obj.value, 'label': obj.label} for obj in AudienceBehavior.objects.filter(is_active=True)],
             'traffic_density': [{'value': obj.value, 'label': obj.label} for obj in TrafficDensity.objects.filter(is_active=True)],

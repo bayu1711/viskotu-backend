@@ -275,6 +275,8 @@ class AbstractTaxonomyModel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     value = models.CharField(max_length=50, unique=True)
     label = models.CharField(max_length=100)
+    description = models.TextField(blank=True, default='')
+    icon = models.CharField(max_length=50, blank=True, default='')
     sort_order = models.IntegerField(default=0)
     is_active = models.BooleanField(default=True)
 

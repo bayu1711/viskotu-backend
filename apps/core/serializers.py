@@ -52,7 +52,7 @@ class UsageTypeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UsageType
-        fields = ['id', 'value', 'label', 'isActive', 'sortOrder']
+        fields = ['id', 'value', 'label', 'description', 'icon', 'isActive', 'sortOrder']
 
 class PrintResolutionSerializer(serializers.ModelSerializer):
     isActive = serializers.BooleanField(source='is_active', read_only=True)
