@@ -351,3 +351,14 @@ class ProofOfPlayMethod(AbstractTaxonomyModel):
     class Meta(AbstractTaxonomyModel.Meta):
         verbose_name_plural = 'Proof of Play Methods'
 
+
+class UsageType(AbstractTaxonomyModel):
+    class Meta(AbstractTaxonomyModel.Meta):
+        verbose_name_plural = 'Usage Types'
+
+
+class PrintResolution(AbstractTaxonomyModel):
+    class Meta(AbstractTaxonomyModel.Meta):
+        verbose_name_plural = 'Print Resolutions'
+
+

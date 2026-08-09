@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.test import APITestCase
 from rest_framework import status
 from apps.spaces.models import Space, SpaceAvailability
+from apps.core.models import Category
 import datetime
 
 User = get_user_model()
@@ -20,10 +21,11 @@ class SpaceAPITests(APITestCase):
             password='Password123!',
             role='advertiser'
         )
+        self.category = Category.objects.create(name='fixed', description='Fixed Spaces')
         self.space = Space.objects.create(
             owner=self.owner,
             name='Times Square Billboard',
-            category='fixed',
+            category=self.category,
             base_rate='500.00',
             billing_period='daily',
             status='available',
@@ -36,7 +38,7 @@ class SpaceAPITests(APITestCase):
         paused_space = Space.objects.create(
             owner=self.owner,
             name='Paused Wall Banner',
-            category='fixed',
+            category=self.category,
             base_rate='100.00',
             status='paused'
         )
@@ -53,7 +55,7 @@ class SpaceAPITests(APITestCase):
         url = reverse('space-list')
         data = {
             'name': 'Chicago Loop Display',
-            'category': 'fixed',
+            'category': self.category.id,
             'base_rate': '350.00',
             'billing_period': 'daily',
             'city': 'Chicago',

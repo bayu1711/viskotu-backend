@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import SiteSettings, SupportTicket, SLAEvent, Category, ItemType, SurfaceMaterial, PointOfInterest
+from .models import SiteSettings, SupportTicket, SLAEvent, Category, ItemType, SurfaceMaterial, PointOfInterest, UsageType, PrintResolution, AudienceBehavior, TrafficDensity, PeakExposure
 
 
 class SiteSettingsSerializer(serializers.ModelSerializer):
@@ -45,6 +45,46 @@ class SurfaceMaterialSerializer(serializers.ModelSerializer):
     class Meta:
         model = SurfaceMaterial
         fields = ['id', 'name', 'description', 'isActive', 'sortOrder']
+
+class UsageTypeSerializer(serializers.ModelSerializer):
+    isActive = serializers.BooleanField(source='is_active', read_only=True)
+    sortOrder = serializers.IntegerField(source='sort_order', read_only=True)
+
+    class Meta:
+        model = UsageType
+        fields = ['id', 'value', 'label', 'isActive', 'sortOrder']
+
+class PrintResolutionSerializer(serializers.ModelSerializer):
+    isActive = serializers.BooleanField(source='is_active', read_only=True)
+    sortOrder = serializers.IntegerField(source='sort_order', read_only=True)
+
+    class Meta:
+        model = PrintResolution
+        fields = ['id', 'value', 'label', 'isActive', 'sortOrder']
+
+class AudienceBehaviorSerializer(serializers.ModelSerializer):
+    isActive = serializers.BooleanField(source='is_active', read_only=True)
+    sortOrder = serializers.IntegerField(source='sort_order', read_only=True)
+
+    class Meta:
+        model = AudienceBehavior
+        fields = ['id', 'value', 'label', 'isActive', 'sortOrder']
+
+class TrafficDensitySerializer(serializers.ModelSerializer):
+    isActive = serializers.BooleanField(source='is_active', read_only=True)
+    sortOrder = serializers.IntegerField(source='sort_order', read_only=True)
+
+    class Meta:
+        model = TrafficDensity
+        fields = ['id', 'value', 'label', 'isActive', 'sortOrder']
+
+class PeakExposureSerializer(serializers.ModelSerializer):
+    isActive = serializers.BooleanField(source='is_active', read_only=True)
+    sortOrder = serializers.IntegerField(source='sort_order', read_only=True)
+
+    class Meta:
+        model = PeakExposure
+        fields = ['id', 'value', 'label', 'isActive', 'sortOrder']
 
 class PointOfInterestSerializer(serializers.ModelSerializer):
     class Meta:

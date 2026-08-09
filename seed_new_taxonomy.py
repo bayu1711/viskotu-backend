@@ -6,7 +6,8 @@ django.setup()
 
 from apps.core.models import (
     Orientation, PhysicalShape, QualityStandard,
-    AudienceBehavior, TrafficDensity, PeakExposure, BillingPeriod, ProofOfPlayMethod
+    AudienceBehavior, TrafficDensity, PeakExposure, BillingPeriod, ProofOfPlayMethod,
+    UsageType, PrintResolution
 )
 
 taxonomies = {
@@ -57,6 +58,17 @@ taxonomies = {
         {'value': 'gps-photo', 'label': 'GPS-tagged Photo (App)', 'sort_order': 1},
         {'value': 'video-walkaround', 'label': 'Video Walk-around', 'sort_order': 2},
         {'value': 'digital-log', 'label': 'Digital Log (Screens only)', 'sort_order': 3},
+    ],
+    UsageType: [
+        {'value': 'moving', 'label': 'Moving', 'sort_order': 1},
+        {'value': 'roaming', 'label': 'Roaming', 'sort_order': 2},
+        {'value': 'stationary', 'label': 'Stationary', 'sort_order': 3},
+        {'value': 'event_based', 'label': 'Event-Based', 'sort_order': 4},
+    ],
+    PrintResolution: [
+        {'value': 'res_72', 'label': '72 DPI', 'sort_order': 1},
+        {'value': 'res_150', 'label': '150 DPI', 'sort_order': 2},
+        {'value': 'res_300', 'label': '300 DPI', 'sort_order': 3},
     ]
 }
 

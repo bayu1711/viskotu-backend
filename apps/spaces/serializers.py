@@ -1,72 +1,7 @@
 from rest_framework import serializers
 from .models import Space, SpacePhoto, SpaceAvailability
 from apps.users.serializers import UserSerializer
-from apps.core.models import Category
-
-def resolve_category_to_choice(category_val):
-    from apps.spaces.models import Space
-    valid_choices = [c[0] for c in Space.CATEGORY_CHOICES]
-    if not category_val:
-        return valid_choices[0]
-    
-    category_str = str(category_val).strip().lower()
-    if category_str in valid_choices:
-        return category_str
-        
-    try:
-        category_obj = Category.objects.filter(id=category_val).first() or Category.objects.filter(name__iexact=category_val).first()
-        if category_obj:
-            name = category_obj.name.lower()
-            if 'vehicle' in name:
-                return 'vehicles'
-            elif 'real estate' in name or 'retail' in name:
-                return 'fixed'
-            elif 'electronic' in name or 'gadget' in name or 'accessor' in name:
-                return 'gadgets'
-            elif 'apparel' in name or 'wearable' in name:
-                return 'wearables'
-            elif 'pet' in name or 'animal' in name:
-                return 'animals'
-            elif 'sport' in name or 'event' in name:
-                return 'events'
-    except Exception:
-        pass
-    
-    return valid_choices[0]
-
-def resolve_choice_to_category_id(choice_val):
-    if not choice_val:
-        return None
-    choice_str = str(choice_val).strip().lower()
-    
-    name_pattern = None
-    if choice_str == 'vehicles':
-        name_pattern = 'Vehicles'
-    elif choice_str == 'fixed':
-        name_pattern = 'Real Estate'
-    elif choice_str == 'gadgets':
-        name_pattern = 'Electronics'
-    elif choice_str == 'wearables':
-        name_pattern = 'Apparel'
-    elif choice_str == 'animals':
-        name_pattern = 'Pets'
-    elif choice_str == 'events':
-        name_pattern = 'Sports'
-        
-    if name_pattern:
-        cat = Category.objects.filter(name__iexact=name_pattern).first()
-        if cat:
-            return str(cat.id)
-            
-    try:
-        cat = Category.objects.filter(id=choice_val).first()
-        if cat:
-            return str(cat.id)
-    except Exception:
-        pass
-        
-    cat = Category.objects.all().first()
-    return str(cat.id) if cat else None
+from apps.core.models import Category, ItemType, SurfaceMaterial, UsageType, PrintResolution, AudienceBehavior, TrafficDensity, PeakExposure
 
 
 class SpacePhotoSerializer(serializers.ModelSerializer):
@@ -87,14 +22,18 @@ class SpaceSerializer(serializers.ModelSerializer):
     primary_photo = serializers.SerializerMethodField()
     category = serializers.SerializerMethodField()
     category_label = serializers.SerializerMethodField()
+    item_type_label = serializers.SerializerMethodField()
+    usage_type_label = serializers.SerializerMethodField()
+    material_label = serializers.SerializerMethodField()
+    min_dpi_label = serializers.SerializerMethodField()
 
     class Meta:
         model = Space
         fields = [
-            'id', 'owner', 'name', 'description', 'category', 'category_label', 'quantity', 'item_type', 'usage_type',
+            'id', 'owner', 'name', 'description', 'category', 'category_label', 'quantity', 'item_type', 'item_type_label', 'usage_type', 'usage_type_label',
             'address', 'city', 'state', 'zip_code', 'latitude', 'longitude',
             'end_point', 'primary_roads', 'service_radius', 'facing_direction',
-            'width', 'height', 'material', 'min_dpi', 'accepted_formats',
+            'width', 'height', 'material', 'material_label', 'min_dpi', 'min_dpi_label', 'accepted_formats',
             'orientation', 'physical_shape', 'reference_photo', 'designer_notes',
             'base_rate', 'billing_period', 'custom_period_days', 'min_placement_duration',
             'bulk_discount_enabled', 'bulk_discount_percentage',
@@ -109,15 +48,24 @@ class SpaceSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'owner', 'created_at', 'updated_at']
 
     def get_category(self, obj):
-        """Return the internal choice value (e.g. 'fixed', 'vehicles')"""
-        return obj.category
+        """Return the ID of the category"""
+        return str(obj.category.id) if obj.category else None
 
     def get_category_label(self, obj):
         """Return human-readable label for the category"""
-        for choice_val, label in Space.CATEGORY_CHOICES:
-            if obj.category == choice_val:
-                return label
-        return obj.category.replace('_', ' ').title() if obj.category else ''
+        return obj.category.name if obj.category else ''
+
+    def get_item_type_label(self, obj):
+        return obj.item_type.name if obj.item_type else None
+
+    def get_usage_type_label(self, obj):
+        return obj.usage_type.label if obj.usage_type else None
+
+    def get_material_label(self, obj):
+        return obj.material.name if obj.material else None
+
+    def get_min_dpi_label(self, obj):
+        return obj.min_dpi.label if obj.min_dpi else None
 
     def get_primary_photo(self, obj):
         primary = obj.photos.filter(is_primary=True).first() or obj.photos.first()
@@ -129,17 +77,23 @@ class SpaceSerializer(serializers.ModelSerializer):
 
 
 class SpaceCreateUpdateSerializer(serializers.ModelSerializer):
-    category = serializers.CharField()
+    category = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all(), required=False, allow_null=True)
+    item_type = serializers.PrimaryKeyRelatedField(queryset=ItemType.objects.all(), required=False, allow_null=True)
+    usage_type = serializers.PrimaryKeyRelatedField(queryset=UsageType.objects.all(), required=False, allow_null=True)
+    material = serializers.PrimaryKeyRelatedField(queryset=SurfaceMaterial.objects.all(), required=False, allow_null=True)
+    min_dpi = serializers.PrimaryKeyRelatedField(queryset=PrintResolution.objects.all(), required=False, allow_null=True)
+    
+    audience_behaviors = serializers.PrimaryKeyRelatedField(queryset=AudienceBehavior.objects.all(), many=True, required=False)
+    traffic_densities = serializers.PrimaryKeyRelatedField(queryset=TrafficDensity.objects.all(), many=True, required=False)
+    peak_exposures = serializers.PrimaryKeyRelatedField(queryset=PeakExposure.objects.all(), many=True, required=False)
 
     class Meta:
         model = Space
         exclude = ['owner', 'created_at', 'updated_at']
 
-    def validate_category(self, value):
-        return resolve_category_to_choice(value)
-
     def create(self, validated_data):
         validated_data['owner'] = self.context['request'].user
+        
         return super().create(validated_data)
 
 
@@ -159,7 +113,7 @@ class SpaceListSerializer(serializers.ModelSerializer):
         ]
 
     def get_category(self, obj):
-        return obj.category
+        return str(obj.category.id) if obj.category else None
 
     def get_primary_photo(self, obj):
         primary = obj.photos.filter(is_primary=True).first() or obj.photos.first()

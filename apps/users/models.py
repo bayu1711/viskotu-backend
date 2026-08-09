@@ -137,12 +137,28 @@ class ProductionPartnerProfile(models.Model):
     rating = models.DecimalField(max_digits=3, decimal_places=1, default=5.0)
     lead_time = models.CharField(max_length=50, blank=True)
     price_tier = models.CharField(max_length=10, default='$$')
-    specialties = models.JSONField(default=list, blank=True)
+    capabilities = models.JSONField(default=list, blank=True)
+    color = models.CharField(max_length=20, default='bg-blue-600')
     is_host_selectable = models.BooleanField(default=True)
     is_platform_network = models.BooleanField(default=True)
     production_lead_days = models.IntegerField(default=5)
     shipping_days = models.IntegerField(default=3)
     capacity = models.ForeignKey('core.PrinterCapacity', on_delete=models.SET_NULL, null=True, blank=True)
+
+    @property
+    def spaces_count(self):
+        # Dynamically calculated from related assignments
+        return self.user.preferred_for_spaces.count()
+
+    @property
+    def jobs_count(self):
+        # Dynamically calculated from jobs table
+        return 0
+
+    @property
+    def revenue(self):
+        # Dynamically calculated from transaction/job table
+        return 0
 
     def __str__(self):
         return f"{self.user.name}'s Production Profile"

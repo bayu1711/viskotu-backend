@@ -1,10 +1,11 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions, viewsets
-from .models import SiteSettings, SupportTicket, SLAEvent, Category, ItemType, SurfaceMaterial, PointOfInterest
+from .models import SiteSettings, SupportTicket, SLAEvent, Category, ItemType, SurfaceMaterial, PointOfInterest, UsageType, PrintResolution, AudienceBehavior, TrafficDensity, PeakExposure
 from .serializers import (
     SiteSettingsSerializer, SupportTicketSerializer, SLAEventSerializer,
-    CategorySerializer, ItemTypeSerializer, SurfaceMaterialSerializer, PointOfInterestSerializer
+    CategorySerializer, ItemTypeSerializer, SurfaceMaterialSerializer, PointOfInterestSerializer,
+    UsageTypeSerializer, PrintResolutionSerializer, AudienceBehaviorSerializer, TrafficDensitySerializer, PeakExposureSerializer
 )
 
 
@@ -27,6 +28,8 @@ class TaxonomyView(APIView):
             'orientation': [{'value': obj.value, 'label': obj.label} for obj in Orientation.objects.filter(is_active=True)],
             'physical_shape': [{'value': obj.value, 'label': obj.label} for obj in PhysicalShape.objects.filter(is_active=True)],
             'quality_standard': [{'value': obj.value, 'label': obj.label} for obj in QualityStandard.objects.filter(is_active=True)],
+            'print_resolution': [{'value': obj.value, 'label': obj.label} for obj in PrintResolution.objects.filter(is_active=True)],
+            'usage_type': [{'value': obj.value, 'label': obj.label} for obj in UsageType.objects.filter(is_active=True)],
             'audience_behavior': [{'value': obj.value, 'label': obj.label} for obj in AudienceBehavior.objects.filter(is_active=True)],
             'traffic_density': [{'value': obj.value, 'label': obj.label} for obj in TrafficDensity.objects.filter(is_active=True)],
             'peak_exposure': [{'value': obj.value, 'label': obj.label} for obj in PeakExposure.objects.filter(is_active=True)],
@@ -122,6 +125,31 @@ class ItemTypeViewSet(viewsets.ReadOnlyModelViewSet):
 class SurfaceMaterialViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = SurfaceMaterial.objects.filter(is_active=True)
     serializer_class = SurfaceMaterialSerializer
+    permission_classes = [permissions.AllowAny]
+
+class UsageTypeViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = UsageType.objects.filter(is_active=True)
+    serializer_class = UsageTypeSerializer
+    permission_classes = [permissions.AllowAny]
+
+class PrintResolutionViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = PrintResolution.objects.filter(is_active=True)
+    serializer_class = PrintResolutionSerializer
+    permission_classes = [permissions.AllowAny]
+
+class AudienceBehaviorViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = AudienceBehavior.objects.filter(is_active=True)
+    serializer_class = AudienceBehaviorSerializer
+    permission_classes = [permissions.AllowAny]
+
+class TrafficDensityViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = TrafficDensity.objects.filter(is_active=True)
+    serializer_class = TrafficDensitySerializer
+    permission_classes = [permissions.AllowAny]
+
+class PeakExposureViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = PeakExposure.objects.filter(is_active=True)
+    serializer_class = PeakExposureSerializer
     permission_classes = [permissions.AllowAny]
 
 class PointOfInterestViewSet(viewsets.ReadOnlyModelViewSet):

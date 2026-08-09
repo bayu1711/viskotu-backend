@@ -4,16 +4,7 @@ from django.conf import settings
 
 
 class Space(models.Model):
-    CATEGORY_CHOICES = [
-        ('vehicles', 'Vehicles'),
-        ('fixed', 'Fixed Spaces'),
-        ('gadgets', 'Gadgets'),
-        ('lifestyle', 'Lifestyle'),
-        ('pets', 'Pets'),
-        ('sports', 'Sports'),
-        ('storefronts', 'Storefronts'),
-        ('accessories', 'Accessories'),
-    ]
+    CATEGORY_CHOICES = None # Deprecated, use core.Category instead
 
     STATUS_CHOICES = [
         ('draft', 'Draft'),
@@ -34,10 +25,10 @@ class Space(models.Model):
     # Basic info
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
-    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
+    category = models.ForeignKey('core.Category', on_delete=models.PROTECT, null=True)
     quantity = models.IntegerField(default=1)
-    item_type = models.CharField(max_length=100, blank=True)
-    usage_type = models.CharField(max_length=50, blank=True)
+    item_type = models.ForeignKey('core.ItemType', on_delete=models.SET_NULL, null=True, blank=True)
+    usage_type = models.ForeignKey('core.UsageType', on_delete=models.SET_NULL, null=True, blank=True)
 
     # Location
     address = models.CharField(max_length=500, blank=True)
@@ -54,8 +45,8 @@ class Space(models.Model):
     # Specifications
     width = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
     height = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
-    material = models.CharField(max_length=100, blank=True)
-    min_dpi = models.IntegerField(default=300)
+    material = models.ForeignKey('core.SurfaceMaterial', on_delete=models.SET_NULL, null=True, blank=True)
+    min_dpi = models.ForeignKey('core.PrintResolution', on_delete=models.SET_NULL, null=True, blank=True)
     accepted_formats = models.JSONField(default=list)
     orientation = models.CharField(max_length=50, blank=True)
     physical_shape = models.CharField(max_length=50, blank=True)
@@ -95,9 +86,9 @@ class Space(models.Model):
 
     # Stats & Visibility
     impressions_estimate = models.CharField(max_length=50, blank=True)
-    audience_behaviors = models.JSONField(default=list, blank=True)
-    traffic_densities = models.JSONField(default=list, blank=True)
-    peak_exposures = models.JSONField(default=list, blank=True)
+    audience_behaviors = models.ManyToManyField('core.AudienceBehavior', blank=True)
+    traffic_densities = models.ManyToManyField('core.TrafficDensity', blank=True)
+    peak_exposures = models.ManyToManyField('core.PeakExposure', blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

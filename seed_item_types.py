@@ -28,14 +28,14 @@ for index, mat_name in enumerate(materials):
 
 # Seed Item Types per Category
 item_types_data = {
-    'vehicles': ['Car Wrap', 'Truck Side', 'Van Wrap', 'Bus Wrap'],
-    'fixed': ['Billboard', 'Window Graphic', 'Wall Banner', 'Building Wrap'],
-    'gadgets': ['Digital Screen', 'TV Display', 'Tablet/Mobile'],
-    'lifestyle': ['T-Shirt', 'Backpack', 'Hat/Cap'],
-    'pets': ['Dog Vest', 'Pet Collar'],
-    'sports': ['Arena Board', 'Jersey/Uniform', 'Field Banner'],
-    'storefronts': ['Counter Display', 'A-Frame Sign', 'Poster Frame'],
-    'accessories': ['Keychain', 'Watch Strap']
+    'Vehicles': ['Car Wrap', 'Truck Side', 'Van Wrap', 'Bus Wrap'],
+    'Fixed Spaces': ['Billboard', 'Window Graphic', 'Wall Banner', 'Building Wrap'],
+    'Gadgets': ['Digital Screen', 'TV Display', 'Tablet/Mobile'],
+    'Lifestyle': ['T-Shirt', 'Backpack', 'Hat/Cap'],
+    'Pets': ['Dog Vest', 'Pet Collar'],
+    'Sports & Outdoors': ['Arena Board', 'Jersey/Uniform', 'Field Banner'],
+    'Storefronts': ['Counter Display', 'A-Frame Sign', 'Poster Frame'],
+    'Accessories': ['Keychain', 'Watch Strap']
 }
 
 for cat_name, types in item_types_data.items():
