@@ -364,3 +364,23 @@ class PrintResolution(AbstractTaxonomyModel):
         verbose_name_plural = 'Print Resolutions'
 
 
+class Report(models.Model):
+    REPORT_STATUS_CHOICES = (
+        ('pending', 'Pending'),
+        ('reviewed', 'Reviewed'),
+        ('resolved', 'Resolved'),
+    )
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    reporter = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='submitted_reports')
+    entity_type = models.CharField(max_length=50) # e.g. 'space', 'user', 'job'
+    entity_id = models.CharField(max_length=255)
+    reason = models.CharField(max_length=255)
+    details = models.TextField(blank=True)
+    status = models.CharField(max_length=20, choices=REPORT_STATUS_CHOICES, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Report {self.id} on {self.entity_type} - {self.reason}"
+

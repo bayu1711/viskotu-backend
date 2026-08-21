@@ -1,11 +1,11 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions, viewsets
-from .models import SiteSettings, SupportTicket, SLAEvent, Category, ItemType, SurfaceMaterial, PointOfInterest, UsageType, PrintResolution, AudienceBehavior, TrafficDensity, PeakExposure
+from .models import SiteSettings, SupportTicket, SLAEvent, Category, ItemType, SurfaceMaterial, PointOfInterest, UsageType, PrintResolution, AudienceBehavior, TrafficDensity, PeakExposure, Report
 from .serializers import (
     SiteSettingsSerializer, SupportTicketSerializer, SLAEventSerializer,
     CategorySerializer, ItemTypeSerializer, SurfaceMaterialSerializer, PointOfInterestSerializer,
-    UsageTypeSerializer, PrintResolutionSerializer, AudienceBehaviorSerializer, TrafficDensitySerializer, PeakExposureSerializer
+    UsageTypeSerializer, PrintResolutionSerializer, AudienceBehaviorSerializer, TrafficDensitySerializer, PeakExposureSerializer, ReportSerializer
 )
 
 
@@ -163,3 +163,17 @@ class PointOfInterestViewSet(viewsets.ReadOnlyModelViewSet):
         if category:
             qs = qs.filter(category=category)
         return qs
+
+class ReportViewSet(viewsets.ModelViewSet):
+    queryset = Report.objects.all()
+    serializer_class = ReportSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(reporter=self.request.user)
+
+    def get_queryset(self):
+        user = self.request.user
+        if getattr(user, 'is_staff', False) or getattr(user, 'is_superuser', False) or getattr(user, 'role', None) == 'admin':
+            return Report.objects.all()
+        return Report.objects.filter(reporter=user)

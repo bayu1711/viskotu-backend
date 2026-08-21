@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import SiteSettings, SupportTicket, SLAEvent, Category, ItemType, SurfaceMaterial, PointOfInterest, UsageType, PrintResolution, AudienceBehavior, TrafficDensity, PeakExposure
+from .models import SiteSettings, SupportTicket, SLAEvent, Category, ItemType, SurfaceMaterial, PointOfInterest, UsageType, PrintResolution, AudienceBehavior, TrafficDensity, PeakExposure, Report
 
 
 class SiteSettingsSerializer(serializers.ModelSerializer):
@@ -90,3 +90,9 @@ class PointOfInterestSerializer(serializers.ModelSerializer):
     class Meta:
         model = PointOfInterest
         fields = ['id', 'name', 'category', 'lat', 'lng']
+
+class ReportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Report
+        fields = '__all__'
+        read_only_fields = ['reporter', 'created_at', 'updated_at', 'status']

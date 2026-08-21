@@ -1,10 +1,11 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import SiteSettingsView, SupportTicketViewSet, SLAEventViewSet, TaxonomyView
+from .views import SiteSettingsView, SupportTicketViewSet, SLAEventViewSet, TaxonomyView, ReportViewSet
 
 router = DefaultRouter()
 router.register(r'tickets', SupportTicketViewSet, basename='ticket')
 router.register(r'sla-events', SLAEventViewSet, basename='sla-event')
+router.register(r'reports', ReportViewSet, basename='report')
 
 urlpatterns = [
     path('', include(router.urls)),
