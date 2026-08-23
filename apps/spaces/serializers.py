@@ -102,11 +102,12 @@ class SpaceListSerializer(serializers.ModelSerializer):
     primary_photo = serializers.SerializerMethodField()
     owner_name = serializers.CharField(source='owner.name', read_only=True)
     category = serializers.SerializerMethodField()
+    category_label = serializers.SerializerMethodField()
 
     class Meta:
         model = Space
         fields = [
-            'id', 'name', 'category', 'city', 'state',
+            'id', 'name', 'category', 'category_label', 'city', 'state',
             'latitude', 'longitude', 'base_rate', 'billing_period',
             'impressions_estimate', 'status', 'is_featured',
             'primary_photo', 'owner_name',
@@ -114,6 +115,9 @@ class SpaceListSerializer(serializers.ModelSerializer):
 
     def get_category(self, obj):
         return str(obj.category.id) if obj.category else None
+
+    def get_category_label(self, obj):
+        return obj.category.name if obj.category else ''
 
     def get_primary_photo(self, obj):
         primary = obj.photos.filter(is_primary=True).first() or obj.photos.first()
