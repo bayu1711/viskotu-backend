@@ -101,6 +101,7 @@ class SpaceListSerializer(serializers.ModelSerializer):
     """Lightweight serializer for list/browse views."""
     primary_photo = serializers.SerializerMethodField()
     owner_name = serializers.CharField(source='owner.name', read_only=True)
+    owner_id = serializers.CharField(source='owner.id', read_only=True)
     category = serializers.SerializerMethodField()
     category_label = serializers.SerializerMethodField()
 
@@ -110,7 +111,7 @@ class SpaceListSerializer(serializers.ModelSerializer):
             'id', 'name', 'category', 'category_label', 'city', 'state',
             'latitude', 'longitude', 'base_rate', 'billing_period',
             'impressions_estimate', 'status', 'is_featured',
-            'primary_photo', 'owner_name',
+            'primary_photo', 'owner_name', 'owner_id'
         ]
 
     def get_category(self, obj):

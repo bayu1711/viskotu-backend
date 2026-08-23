@@ -18,6 +18,10 @@ class AdPlacementViewSet(viewsets.ModelViewSet):
         )
 
     def perform_create(self, serializer):
+        space = serializer.validated_data.get('space')
+        if space and space.owner == self.request.user:
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError({'space': 'You cannot book your own ad space listing.'})
         serializer.save(advertiser=self.request.user)
 
     def perform_update(self, serializer):
