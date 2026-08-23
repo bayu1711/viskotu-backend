@@ -1,7 +1,14 @@
-{% extends "admin/base_site.html" %}
-{% load static %}
+{% extends "admin/base.html" %}
 
-{% block extrahead %}
+{% load i18n %}
+
+{% block title %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block branding %}
+<h1 id="site-name"><a href="{% url 'admin:index' %}">{{ site_header|default:_('Django administration') }}</a></h1>
+{% endblock %}
+
+{% block userlinks %}
+    <a href="/api/docs/" target="_blank" style="color: #66ff66; font-weight: bold; padding-right: 8px;">Swagger UI</a> /
     {{ block.super }}
-    <link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}">
 {% endblock %}
