@@ -24,13 +24,14 @@ class SpaceSerializer(serializers.ModelSerializer):
     category_label = serializers.SerializerMethodField()
     item_type_label = serializers.SerializerMethodField()
     usage_type_label = serializers.SerializerMethodField()
+    usage_type_value = serializers.SerializerMethodField()
     material_label = serializers.SerializerMethodField()
     min_dpi_label = serializers.SerializerMethodField()
 
     class Meta:
         model = Space
         fields = [
-            'id', 'owner', 'name', 'description', 'category', 'category_label', 'quantity', 'item_type', 'item_type_label', 'usage_type', 'usage_type_label',
+            'id', 'owner', 'name', 'description', 'category', 'category_label', 'quantity', 'item_type', 'item_type_label', 'usage_type', 'usage_type_label', 'usage_type_value',
             'address', 'city', 'state', 'zip_code', 'latitude', 'longitude',
             'end_point', 'primary_roads', 'service_radius', 'facing_direction',
             'width', 'height', 'material', 'material_label', 'min_dpi', 'min_dpi_label', 'accepted_formats',
@@ -60,6 +61,9 @@ class SpaceSerializer(serializers.ModelSerializer):
 
     def get_usage_type_label(self, obj):
         return obj.usage_type.label if obj.usage_type else None
+
+    def get_usage_type_value(self, obj):
+        return obj.usage_type.value if obj.usage_type else None
 
     def get_material_label(self, obj):
         return obj.material.name if obj.material else None
