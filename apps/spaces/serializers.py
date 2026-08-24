@@ -40,6 +40,7 @@ class SpaceSerializer(serializers.ModelSerializer):
             'bulk_discount_enabled', 'bulk_discount_percentage',
             'fulfillment_type', 'self_fulfillment_reason',
             'print_partner_routing', 'preferred_production_partner',
+            'external_partner_place_id', 'external_partner_name',
             'proof_of_play_method', 'install_lead_days', 'production_lead_days',
             'status', 'is_featured', 'occupancy_rate',
             'impressions_estimate', 'audience_behaviors', 'traffic_densities', 'peak_exposures',
@@ -95,6 +96,31 @@ class SpaceCreateUpdateSerializer(serializers.ModelSerializer):
         model = Space
         exclude = ['owner', 'created_at', 'updated_at']
 
+    def to_internal_value(self, data):
+        import uuid
+        mutable_data = data.copy() if hasattr(data, 'copy') else data
+        
+        def is_uuid(val):
+            try:
+                uuid.UUID(str(val))
+                return True
+            except ValueError:
+                return False
+
+        if 'item_type' in mutable_data and mutable_data['item_type']:
+            if not is_uuid(mutable_data['item_type']):
+                cat_id = mutable_data.get('category')
+                if cat_id and is_uuid(cat_id):
+                    new_item, _ = ItemType.objects.get_or_create(name=mutable_data['item_type'], category_id=cat_id, defaults={'is_active': False})
+                    mutable_data['item_type'] = str(new_item.id)
+
+        if 'material' in mutable_data and mutable_data['material']:
+            if not is_uuid(mutable_data['material']):
+                new_mat, _ = SurfaceMaterial.objects.get_or_create(name=mutable_data['material'], defaults={'is_active': False})
+                mutable_data['material'] = str(new_mat.id)
+
+        return super().to_internal_value(mutable_data)
+
     def create(self, validated_data):
         validated_data['owner'] = self.context['request'].user
         
@@ -108,6 +134,7 @@ class SpaceListSerializer(serializers.ModelSerializer):
     owner_id = serializers.CharField(source='owner.id', read_only=True)
     category = serializers.SerializerMethodField()
     category_label = serializers.SerializerMethodField()
+    production_partner_name = serializers.SerializerMethodField()
 
     class Meta:
         model = Space
@@ -115,7 +142,7 @@ class SpaceListSerializer(serializers.ModelSerializer):
             'id', 'name', 'category', 'category_label', 'city', 'state',
             'latitude', 'longitude', 'base_rate', 'billing_period',
             'impressions_estimate', 'status', 'is_featured',
-            'primary_photo', 'owner_name', 'owner_id'
+            'primary_photo', 'owner_name', 'owner_id', 'production_partner_name'
         ]
 
     def get_category(self, obj):
@@ -123,6 +150,18 @@ class SpaceListSerializer(serializers.ModelSerializer):
 
     def get_category_label(self, obj):
         return obj.category.name if obj.category else ''
+
+    def get_production_partner_name(self, obj):
+        if obj.fulfillment_type != 'managed_printing':
+            return None
+        if obj.print_partner_routing == 'auto_assign':
+            return 'Auto-assigned Partner'
+        if obj.print_partner_routing == 'custom_partner':
+            if obj.preferred_production_partner:
+                return obj.preferred_production_partner.name
+            if obj.external_partner_name:
+                return obj.external_partner_name
+        return None
 
     def get_primary_photo(self, obj):
         primary = obj.photos.filter(is_primary=True).first() or obj.photos.first()

@@ -73,6 +73,8 @@ class Space(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
         null=True, blank=True, related_name='preferred_for_spaces'
     )
+    external_partner_place_id = models.CharField(max_length=255, blank=True)
+    external_partner_name = models.CharField(max_length=255, blank=True)
     proof_of_play_method = models.CharField(max_length=50, blank=True)
 
     # Lead times
