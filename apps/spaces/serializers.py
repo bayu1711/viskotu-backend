@@ -40,7 +40,7 @@ class SpaceSerializer(serializers.ModelSerializer):
             'bulk_discount_enabled', 'bulk_discount_percentage',
             'fulfillment_type', 'self_fulfillment_reason',
             'print_partner_routing', 'preferred_production_partner',
-            'external_partner_place_id', 'external_partner_name',
+
             'proof_of_play_method', 'install_lead_days', 'production_lead_days',
             'status', 'is_featured', 'occupancy_rate',
             'impressions_estimate', 'audience_behaviors', 'traffic_densities', 'peak_exposures',
@@ -190,8 +190,7 @@ class SpaceListSerializer(serializers.ModelSerializer):
         if obj.print_partner_routing == 'custom_partner':
             if obj.preferred_production_partner:
                 return obj.preferred_production_partner.name
-            if obj.external_partner_name:
-                return obj.external_partner_name
+
         return None
 
     def get_primary_photo(self, obj):
