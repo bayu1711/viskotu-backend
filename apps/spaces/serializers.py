@@ -91,6 +91,7 @@ class SpaceCreateUpdateSerializer(serializers.ModelSerializer):
     audience_behaviors = serializers.PrimaryKeyRelatedField(queryset=AudienceBehavior.objects.all(), many=True, required=False)
     traffic_densities = serializers.PrimaryKeyRelatedField(queryset=TrafficDensity.objects.all(), many=True, required=False)
     peak_exposures = serializers.PrimaryKeyRelatedField(queryset=PeakExposure.objects.all(), many=True, required=False)
+    google_place_details = serializers.JSONField(write_only=True, required=False)
 
     class Meta:
         model = Space
@@ -121,10 +122,40 @@ class SpaceCreateUpdateSerializer(serializers.ModelSerializer):
 
         return super().to_internal_value(mutable_data)
 
+    def _handle_google_places_partner(self, validated_data):
+        google_details = validated_data.pop('google_place_details', None)
+        if google_details and google_details.get('place_id'):
+            from apps.users.models import User, ProductionPartnerProfile
+            place_id = google_details.get('place_id')
+            user, created = User.objects.get_or_create(
+                google_place_id=place_id,
+                defaults={
+                    'email': f"contact@{place_id}.google_places",
+                    'role': 'production-partner',
+                    'company_name': google_details.get('name', ''),
+                    'address': google_details.get('formatted_address', ''),
+                    'phone': google_details.get('formatted_phone_number', ''),
+                    'is_email_verified': False
+                }
+            )
+            
+            if created or not hasattr(user, 'production_partner_profile'):
+                ProductionPartnerProfile.objects.create(
+                    user=user,
+                    location=google_details.get('formatted_address', ''),
+                    is_platform_network=False
+                )
+            
+            validated_data['preferred_production_partner'] = user
+
     def create(self, validated_data):
         validated_data['owner'] = self.context['request'].user
-        
+        self._handle_google_places_partner(validated_data)
         return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        self._handle_google_places_partner(validated_data)
+        return super().update(instance, validated_data)
 
 
 class SpaceListSerializer(serializers.ModelSerializer):
