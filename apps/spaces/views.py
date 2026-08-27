@@ -20,6 +20,7 @@ class SpaceViewSet(viewsets.ModelViewSet):
     - PATCH /spaces/{id}/  → update (owner only)
     - DELETE /spaces/{id}/ → delete (owner only)
     - GET /spaces/mine/    → my listings (auth required)
+    - GET /spaces/reach/   → targeting reach estimate (auth required)
     """
     queryset = Space.objects.select_related('owner').prefetch_related('photos')
     permission_classes = [IsAuthenticatedOrReadOnly]
@@ -137,3 +138,101 @@ class SpaceViewSet(viewsets.ModelViewSet):
         space.status = 'available'
         space.save(update_fields=['status'])
         return Response(SpaceSerializer(space, context={'request': request}).data)
+
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated], url_path='reach')
+    def reach(self, request):
+        """
+        GET /spaces/reach/
+        Query params (one set required):
+          Spot / Region  → lat, lng, radius_km        (default radius_km=5)
+          Route          → lat1, lng1, lat2, lng2, corridor_km (default 10)
+
+        Returns:
+          { space_count: int, total_daily_impressions: int }
+        """
+        import math
+
+        def haversine(lat1, lng1, lat2, lng2):
+            R = 6371
+            phi1, phi2 = math.radians(lat1), math.radians(lat2)
+            dphi = math.radians(lat2 - lat1)
+            dlambda = math.radians(lng2 - lng1)
+            a = math.sin(dphi / 2) ** 2 + math.cos(phi1) * math.cos(phi2) * math.sin(dlambda / 2) ** 2
+            return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
+        def point_to_segment_km(plat, plng, lat1, lng1, lat2, lng2):
+            ax, ay = lng1, lat1
+            bx, by = lng2, lat2
+            px, py = plng, plat
+            abx, aby = bx - ax, by - ay
+            apx, apy = px - ax, py - ay
+            denom = abx ** 2 + aby ** 2
+            t = max(0.0, min(1.0, (apx * abx + apy * aby) / denom)) if denom > 1e-9 else 0.0
+            return haversine(plat, plng, ay + t * aby, ax + t * abx)
+
+        def parse_impressions(val):
+            if not val:
+                return 0
+            try:
+                return int(val)
+            except (ValueError, TypeError):
+                s = str(val).strip().upper().replace(',', '')
+                if s.endswith('M'):
+                    return int(float(s[:-1]) * 1_000_000)
+                if s.endswith('K'):
+                    return int(float(s[:-1]) * 1_000)
+                return 0
+
+        params = request.query_params
+
+        # --- Spot / Region mode ---
+        if params.get('lat') and params.get('lng'):
+            try:
+                lat = float(params['lat'])
+                lng = float(params['lng'])
+                radius_km = float(params.get('radius_km', 5))
+            except (ValueError, TypeError):
+                return Response({'detail': 'Invalid lat/lng/radius_km.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            deg = radius_km / 111.0
+            qs = Space.objects.filter(
+                status='available',
+                latitude__isnull=False, longitude__isnull=False,
+                latitude__gte=lat - deg, latitude__lte=lat + deg,
+                longitude__gte=lng - deg, longitude__lte=lng + deg,
+            ).only('latitude', 'longitude', 'impressions_estimate')
+
+            matched = [s for s in qs if haversine(lat, lng, float(s.latitude), float(s.longitude)) <= radius_km]
+
+        # --- Route mode ---
+        elif params.get('lat1') and params.get('lng1') and params.get('lat2') and params.get('lng2'):
+            try:
+                lat1, lng1 = float(params['lat1']), float(params['lng1'])
+                lat2, lng2 = float(params['lat2']), float(params['lng2'])
+                corridor_km = float(params.get('corridor_km', 10))
+            except (ValueError, TypeError):
+                return Response({'detail': 'Invalid route params.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            deg = corridor_km / 111.0
+            qs = Space.objects.filter(
+                status='available',
+                latitude__isnull=False, longitude__isnull=False,
+                latitude__gte=min(lat1, lat2) - deg, latitude__lte=max(lat1, lat2) + deg,
+                longitude__gte=min(lng1, lng2) - deg, longitude__lte=max(lng1, lng2) + deg,
+            ).only('latitude', 'longitude', 'impressions_estimate')
+
+            matched = [
+                s for s in qs
+                if point_to_segment_km(float(s.latitude), float(s.longitude), lat1, lng1, lat2, lng2) <= corridor_km
+            ]
+
+        else:
+            return Response(
+                {'detail': 'Provide lat+lng+radius_km (spot/region) or lat1+lng1+lat2+lng2 (route).'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        return Response({
+            'space_count': len(matched),
+            'total_daily_impressions': sum(parse_impressions(s.impressions_estimate) for s in matched),
+        })
