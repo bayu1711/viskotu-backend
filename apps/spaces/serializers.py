@@ -91,7 +91,7 @@ class SpaceCreateUpdateSerializer(serializers.ModelSerializer):
     audience_behaviors = serializers.PrimaryKeyRelatedField(queryset=AudienceBehavior.objects.all(), many=True, required=False)
     traffic_densities = serializers.PrimaryKeyRelatedField(queryset=TrafficDensity.objects.all(), many=True, required=False)
     peak_exposures = serializers.PrimaryKeyRelatedField(queryset=PeakExposure.objects.all(), many=True, required=False)
-    google_place_details = serializers.JSONField(write_only=True, required=False)
+    google_place_details = serializers.JSONField(write_only=True, required=False, allow_null=True)
 
     class Meta:
         model = Space
