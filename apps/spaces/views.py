@@ -391,6 +391,7 @@ class SpaceViewSet(viewsets.ModelViewSet):
                 'longitude': float(space.longitude) if space.longitude else None,
                 'primary_photo': request.build_absolute_uri(primary_photo) if primary_photo else None,
                 'category': str(space.category_id) if space.category_id else None,
+                'category_label': space.category.name if space.category else None,
             })
 
         return Response(result)
