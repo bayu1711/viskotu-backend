@@ -150,12 +150,21 @@ class CreativeAssetViewSet(viewsets.ModelViewSet):
         if not file:
             return Response({'detail': 'No file provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
+        import json
+        dimensions = {}
+        if 'dimensions' in request.data:
+            try:
+                dimensions = json.loads(request.data['dimensions'])
+            except json.JSONDecodeError:
+                pass
+
         serializer = self.get_serializer(data={
             'name': request.data.get('name', file.name),
             'asset_type': request.data.get('asset_type', 'image'),
             'campaign': request.data.get('campaign'),
             'file': file,
             'file_size': file.size,
+            'dimensions': dimensions,
         })
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
