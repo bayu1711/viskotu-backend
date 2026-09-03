@@ -81,6 +81,7 @@ class Campaign(models.Model):
     name = models.CharField(max_length=200)
     objective = models.ForeignKey(CampaignObjective, on_delete=models.SET_NULL, null=True, blank=True, related_name='campaigns')
     status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='draft')
+    is_archived = models.BooleanField(default=False)
 
     budget = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     spend = models.DecimalField(max_digits=12, decimal_places=2, default=0)
