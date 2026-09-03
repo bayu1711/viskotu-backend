@@ -76,8 +76,19 @@ class CampaignViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         if user.is_staff and self.request.query_params.get('all') == 'true':
-            return Campaign.objects.all().prefetch_related('assets')
-        return Campaign.objects.filter(advertiser=user).prefetch_related('assets')
+            qs = Campaign.objects.all()
+        else:
+            qs = Campaign.objects.filter(advertiser=user)
+            
+        status_param = self.request.query_params.get('status')
+        if status_param == 'archived':
+            qs = qs.filter(is_archived=True)
+        else:
+            qs = qs.filter(is_archived=False)
+            if status_param:
+                qs = qs.filter(status=status_param)
+                
+        return qs.prefetch_related('assets')
 
     def get_serializer_class(self):
         if self.action == 'list':

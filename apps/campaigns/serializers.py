@@ -73,7 +73,7 @@ class CampaignSerializer(serializers.ModelSerializer):
             'id', 'advertiser', 'name', 'objective', 'objective_detail', 'status',
             'budget', 'spend', 'impressions', 'clicks', 'ctr', 'conversions',
             'start_date', 'end_date', 'target_locations', 'target_audience',
-            'assets', 'created_at', 'updated_at',
+            'assets', 'created_at', 'updated_at', 'is_archived',
         ]
         read_only_fields = ['id', 'advertiser', 'spend', 'impressions', 'clicks', 'conversions', 'created_at', 'updated_at']
 
@@ -98,5 +98,5 @@ class CampaignListSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'name', 'objective', 'objective_detail', 'status',
             'budget', 'spend', 'impressions', 'clicks', 'ctr',
-            'start_date', 'end_date', 'created_at',
+            'start_date', 'end_date', 'created_at', 'is_archived',
         ]
